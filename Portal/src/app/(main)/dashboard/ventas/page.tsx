@@ -9,8 +9,8 @@ export const dynamic = "force-dynamic";
 
 const formatoFecha = new Intl.DateTimeFormat("es-CO", { dateStyle: "medium", timeStyle: "short" });
 
-export default function PaginaVentas() {
-  const ventas = ventaRepo.listar();
+export default async function PaginaVentas() {
+  const ventas = await ventaRepo.listar();
 
   return (
     <div className="flex flex-col gap-4">

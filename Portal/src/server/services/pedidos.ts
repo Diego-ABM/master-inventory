@@ -16,7 +16,7 @@ const MODULO = "pedidos";
 type Resultado<T = undefined> = { ok: true; data?: T } | { ok: false; mensaje: string };
 
 function fallo(mensaje: string, error?: unknown): Resultado<never> {
-  if (error) logRepo.registrar("ERROR", MODULO, mensaje, String(error));
+  if (error) logRepo.registrarSeguro("ERROR", MODULO, mensaje, String(error));
   return { ok: false, mensaje };
 }
 
@@ -45,22 +45,24 @@ export async function crearPedido(entrada: unknown): Promise<Resultado<{ id: num
   if (!datos.success) return fallo(datos.error.issues[0]?.message ?? "Datos no válidos.");
 
   try {
-    const id = transaccion(() => {
-      const items = datos.data.items.map((item) => {
-        if (item.producto_id == null) {
-          return { ...item, precio_compra: 0, precio_unitario: item.precio_unitario ?? 0 };
-        }
-        const producto = productoRepo.obtener(item.producto_id);
-        if (!producto) throw new Error("PRODUCTO_NO_EXISTE");
-        if (!validarCantidad(item.cantidad, producto.cantidad_stock)) throw new Error("CANTIDAD_INVALIDA");
-        return {
-          producto_id: producto.id,
-          nombre_producto: producto.nombre,
-          cantidad: item.cantidad,
-          precio_compra: producto.precio_compra,
-          precio_unitario: producto.precio_venta,
-        };
-      });
+    const id = await transaccion(async (db) => {
+      const items = await Promise.all(
+        datos.data.items.map(async (item) => {
+          if (item.producto_id == null) {
+            return { ...item, precio_compra: 0, precio_unitario: item.precio_unitario ?? 0 };
+          }
+          const producto = await productoRepo.obtener(item.producto_id, db);
+          if (!producto) throw new Error("PRODUCTO_NO_EXISTE");
+          if (!validarCantidad(item.cantidad, producto.cantidad_stock)) throw new Error("CANTIDAD_INVALIDA");
+          return {
+            producto_id: producto.id,
+            nombre_producto: producto.nombre,
+            cantidad: item.cantidad,
+            precio_compra: producto.precio_compra,
+            precio_unitario: producto.precio_venta,
+          };
+        }),
+      );
       return pedidoRepo.crear(
         {
           nombre_cliente: datos.data.nombre_cliente,
@@ -69,9 +71,10 @@ export async function crearPedido(entrada: unknown): Promise<Resultado<{ id: num
           total: calcularTotalPedido(items),
         },
         items,
+        db,
       );
     });
-    logRepo.registrar("INFO", MODULO, `Pedido ${id} creado para ${datos.data.nombre_cliente}.`);
+    await logRepo.registrar("INFO", MODULO, `Pedido ${id} creado para ${datos.data.nombre_cliente}.`);
     revalidar();
     return { ok: true, data: { id } };
   } catch (error) {
@@ -85,27 +88,27 @@ export async function crearPedido(entrada: unknown): Promise<Resultado<{ id: num
 
 export async function cambiarEntregado(id: number, entregado: boolean): Promise<Resultado<{ aviso?: string }>> {
   try {
-    const aviso = transaccion(() => {
-      const pedido = pedidoRepo.obtener(id);
+    const aviso = await transaccion(async (db) => {
+      const pedido = await pedidoRepo.obtener(id, db);
       if (!pedido) throw new Error("PEDIDO_NO_EXISTE");
       let mensaje: string | undefined;
 
       if (entregado && debeDescontarStock({ ...pedido, entregado: 1 })) {
         for (const item of pedido.items) {
           if (item.producto_id == null) continue;
-          const producto = productoRepo.obtener(item.producto_id);
-          if (producto) productoRepo.ajustarStock(item.producto_id, -item.cantidad);
+          const producto = await productoRepo.obtener(item.producto_id, db);
+          if (producto) await productoRepo.ajustarStock(item.producto_id, -item.cantidad, db);
         }
-        pedidoRepo.cambiarEntregado(id, true, true);
+        await pedidoRepo.cambiarEntregado(id, true, true, db);
       } else {
         if (!entregado && pedido.stock_descontado === 1) {
           mensaje = "El stock no se repone automáticamente; corrígelo de forma manual con +/− si hace falta.";
         }
-        pedidoRepo.cambiarEntregado(id, entregado, pedido.stock_descontado === 1);
+        await pedidoRepo.cambiarEntregado(id, entregado, pedido.stock_descontado === 1, db);
       }
       return mensaje;
     });
-    logRepo.registrar("INFO", MODULO, `Pedido ${id} ${entregado ? "entregado" : "marcado pendiente"}.`);
+    await logRepo.registrar("INFO", MODULO, `Pedido ${id} ${entregado ? "entregado" : "marcado pendiente"}.`);
     revalidar();
     return { ok: true, data: { aviso } };
   } catch (error) {
@@ -116,12 +119,12 @@ export async function cambiarEntregado(id: number, entregado: boolean): Promise<
 
 export async function cambiarPagado(id: number, pagado: boolean): Promise<Resultado> {
   try {
-    transaccion(() => {
-      const pedido = pedidoRepo.obtener(id);
+    await transaccion(async (db) => {
+      const pedido = await pedidoRepo.obtener(id, db);
       if (!pedido) throw new Error("PEDIDO_NO_EXISTE");
-      pedidoRepo.cambiarPagado(id, pagado);
+      await pedidoRepo.cambiarPagado(id, pagado, db);
     });
-    logRepo.registrar("INFO", MODULO, `Pedido ${id} ${pagado ? "pagado" : "pago pendiente"}.`);
+    await logRepo.registrar("INFO", MODULO, `Pedido ${id} ${pagado ? "pagado" : "pago pendiente"}.`);
     revalidar();
     return { ok: true };
   } catch (error) {
@@ -132,13 +135,13 @@ export async function cambiarPagado(id: number, pagado: boolean): Promise<Result
 
 export async function eliminarPedido(id: number): Promise<Resultado> {
   try {
-    transaccion(() => {
-      const pedido = pedidoRepo.obtener(id);
+    await transaccion(async (db) => {
+      const pedido = await pedidoRepo.obtener(id, db);
       if (!pedido) throw new Error("PEDIDO_NO_EXISTE");
       if (!puedeEliminarse(pedido)) throw new Error("PEDIDO_ENTREGADO");
-      pedidoRepo.eliminar(id);
+      await pedidoRepo.eliminar(id, db);
     });
-    logRepo.registrar("INFO", MODULO, `Pedido ${id} eliminado.`);
+    await logRepo.registrar("INFO", MODULO, `Pedido ${id} eliminado.`);
     revalidar();
     return { ok: true };
   } catch (error) {

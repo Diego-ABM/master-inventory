@@ -3,7 +3,7 @@ import { NextResponse } from "next/server";
 import { generarReporteTxt, nombreArchivoReporte } from "@/lib/domain/reporte-txt";
 import { obtenerReporte, periodoDesdeParametros } from "@/server/services/reportes";
 
-export function GET(req: Request) {
+export async function GET(req: Request) {
   const { searchParams } = new URL(req.url);
   const periodo = periodoDesdeParametros({
     periodo: searchParams.get("periodo") ?? undefined,
@@ -16,7 +16,7 @@ export function GET(req: Request) {
     );
   }
 
-  const reporte = obtenerReporte(periodo);
+  const reporte = await obtenerReporte(periodo);
   const txt = generarReporteTxt(periodo, reporte, Date.now());
 
   return new Response(txt, {

@@ -1,16 +1,19 @@
 # Contrato — Interfaz de almacenamiento (repositorios)
 
-Costura de desacoplamiento exigida por la constitución ("arquitectura desacoplada"): la única capa que emite SQL es `src/server/repositories/`. Servicios y UI consumen estas firmas; el motor (`node:sqlite` hoy) puede cambiarse sin tocar dominio ni UI.
+Costura de desacoplamiento exigida por la constitución ("arquitectura desacoplada"): la única capa que emite SQL es `src/server/repositories/`. Servicios y UI consumen estas firmas; el motor (hoy **Postgres en Supabase**, vía `postgres.js`) puede cambiarse sin tocar dominio ni UI.
 
-**Convenciones**: todas las funciones son síncronas (`DatabaseSync`); los tipos de entrada/salida son los del dominio (`src/lib/domain/tipos.ts`), no filas crudas. Las operaciones multi-escritura las ejecutan los **servicios** dentro de una transacción explícita (`db.transaccion(fn)`); los repositorios ofrecen primitivas atómicas.
+**Convenciones**: todas las funciones son **asíncronas** (`Promise`); los tipos de entrada/salida son los del dominio (`src/lib/domain/tipos.ts`), no filas crudas. Las operaciones multi-escritura las ejecutan los **servicios** dentro de una transacción explícita (`db.transaccion(fn)`); los repositorios ofrecen primitivas atómicas y aceptan un `sql` opcional para correr dentro de esa transacción. Las firmas de abajo omiten el `Promise<>` por brevedad.
 
 ## `db` (`src/server/db/`)
 
 ```ts
-abrirDb(): DatabaseSync                      // singleton; crea data/ + esquema si no existe
-transaccion<T>(fn: () => T): T               // BEGIN IMMEDIATE / COMMIT / ROLLBACK
-ejecutarInit(): void                         // esquema + limpieza logs>90d + chequeo de seed
+abrirDb(): Promise<postgres.Sql>             // singleton; crea el esquema si no existe (memoizado)
+transaccion<T>(fn: (sql) => Promise<T>): Promise<T>   // BEGIN / COMMIT / ROLLBACK
+ejecutarInit(): Promise<void>                // esquema + limpieza logs>90d
+sincronizarSecuencias(sql): Promise<void>    // repara los IDENTITY tras un respaldo con ids explícitos
 ```
+
+**Conexión**: `STORAGE_POSTGRES_URL` (pooler de Supabase) → `POSTGRES_URL` → `DATABASE_URL` → `STORAGE_POSTGRES_URL_NON_POOLING`. `prepare: false` por pgbouncer. Fotos: las subidas viven en `fotos_producto.datos` (BYTEA) servidas por `/api/fotos/[name]`; las del catálogo quedan como ruta estática `/seed/images/*` sin bytes en DB.
 
 ## `productoRepo`
 
@@ -81,4 +84,4 @@ exportarTodo(): DatosRespaldo                            // volcado de tablas de
 reemplazarTodo(datos: DatosRespaldo): void               // dentro de transacción del servicio
 ```
 
-**Errores**: los repositorios propagan excepciones de SQLite; los servicios las convierten en mensajes en español para el usuario y registran `ERROR` en `logs` con la excepción.
+**Errores**: los repositorios propagan excepciones de Postgres; los servicios las convierten en mensajes en español para el usuario y registran `ERROR` en `logs` con la excepción.

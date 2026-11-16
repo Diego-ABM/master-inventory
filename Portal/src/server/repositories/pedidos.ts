@@ -1,5 +1,5 @@
 import type { NuevoPedido, NuevoPedidoItem, PedidoCliente, PedidoConItems, PedidoItem } from "@/lib/domain/tipos";
-import { abrirDb, aObjeto, aObjetos } from "@/server/db";
+import { abrirDb, aObjeto, aObjetos, type Sql } from "@/server/db";
 
 interface FiltroPedidos {
   entregado?: boolean;
@@ -7,129 +7,125 @@ interface FiltroPedidos {
 }
 
 export const pedidoRepo = {
-  crear(pedido: NuevoPedido, items: NuevoPedidoItem[]): number {
-    const db = abrirDb();
-    const resultado = db
-      .prepare("INSERT INTO pedidos_clientes (nombre_cliente, contacto, fecha_pedido, total) VALUES (?, ?, ?, ?)")
-      .run(pedido.nombre_cliente, pedido.contacto ?? null, pedido.fecha_pedido, pedido.total);
-    const pedidoId = Number(resultado.lastInsertRowid);
-    const stmt = db.prepare(
-      `INSERT INTO pedido_cliente_items (pedido_id, producto_id, nombre_producto, cantidad, precio_compra, precio_unitario)
-       VALUES (?, ?, ?, ?, ?, ?)`,
-    );
+  async crear(pedido: NuevoPedido, items: NuevoPedidoItem[], sql?: Sql): Promise<number> {
+    const db = sql ?? (await abrirDb());
+    const [fila] = await db`
+      INSERT INTO pedidos_clientes (nombre_cliente, contacto, fecha_pedido, total)
+      VALUES (${pedido.nombre_cliente}, ${pedido.contacto ?? null}, ${pedido.fecha_pedido}, ${pedido.total})
+      RETURNING id`;
+    const pedidoId = Number(fila.id);
     for (const item of items) {
-      stmt.run(
-        pedidoId,
-        item.producto_id,
-        item.nombre_producto,
-        item.cantidad,
-        item.precio_compra,
-        item.precio_unitario,
-      );
+      await db`
+        INSERT INTO pedido_cliente_items (pedido_id, producto_id, nombre_producto, cantidad, precio_compra, precio_unitario)
+        VALUES (${pedidoId}, ${item.producto_id}, ${item.nombre_producto}, ${item.cantidad},
+          ${item.precio_compra}, ${item.precio_unitario})`;
     }
     return pedidoId;
   },
 
-  obtener(id: number): PedidoConItems | null {
-    const db = abrirDb();
-    const pedido = aObjeto<PedidoCliente>(db.prepare("SELECT * FROM pedidos_clientes WHERE id = ?").get(id));
+  async obtener(id: number, sql?: Sql): Promise<PedidoConItems | null> {
+    const db = sql ?? (await abrirDb());
+    const [fila] = await db`SELECT * FROM pedidos_clientes WHERE id = ${id}`;
+    const pedido = aObjeto<PedidoCliente>(fila);
     if (!pedido) return null;
-    const items = aObjetos<PedidoItem>(
-      db.prepare("SELECT * FROM pedido_cliente_items WHERE pedido_id = ? ORDER BY id").all(id),
-    );
-    return { ...pedido, items };
+    const filasItems = await db`SELECT * FROM pedido_cliente_items WHERE pedido_id = ${id} ORDER BY id`;
+    return { ...pedido, items: aObjetos<PedidoItem>(filasItems) };
   },
 
-  listar(filtro: FiltroPedidos = {}): PedidoConItems[] {
-    const db = abrirDb();
+  async listar(filtro: FiltroPedidos = {}, sql?: Sql): Promise<PedidoConItems[]> {
+    const db = sql ?? (await abrirDb());
     const condiciones: string[] = [];
     const params: number[] = [];
     if (filtro.entregado !== undefined) {
-      condiciones.push("entregado = ?");
       params.push(filtro.entregado ? 1 : 0);
+      condiciones.push(`entregado = $${params.length}`);
     }
     if (filtro.pagado !== undefined) {
-      condiciones.push("pagado = ?");
       params.push(filtro.pagado ? 1 : 0);
+      condiciones.push(`pagado = $${params.length}`);
     }
     const where = condiciones.length > 0 ? `WHERE ${condiciones.join(" AND ")}` : "";
     const pedidos = aObjetos<PedidoCliente>(
-      db.prepare(`SELECT * FROM pedidos_clientes ${where} ORDER BY fecha_pedido DESC`).all(...params),
+      await db.unsafe(`SELECT * FROM pedidos_clientes ${where} ORDER BY fecha_pedido DESC`, params),
     );
-    const stmtItems = db.prepare("SELECT * FROM pedido_cliente_items WHERE pedido_id = ? ORDER BY id");
-    return pedidos.map((p) => ({ ...p, items: aObjetos<PedidoItem>(stmtItems.all(p.id)) }));
+    return Promise.all(
+      pedidos.map(async (p) => ({
+        ...p,
+        items: aObjetos<PedidoItem>(await db`SELECT * FROM pedido_cliente_items WHERE pedido_id = ${p.id} ORDER BY id`),
+      })),
+    );
   },
 
-  cambiarEntregado(id: number, entregado: boolean, stockDescontado: boolean): void {
-    abrirDb()
-      .prepare("UPDATE pedidos_clientes SET entregado = ?, stock_descontado = ? WHERE id = ?")
-      .run(entregado ? 1 : 0, stockDescontado ? 1 : 0, id);
+  async cambiarEntregado(id: number, entregado: boolean, stockDescontado: boolean, sql?: Sql): Promise<void> {
+    const db = sql ?? (await abrirDb());
+    await db`
+      UPDATE pedidos_clientes SET entregado = ${entregado ? 1 : 0}, stock_descontado = ${stockDescontado ? 1 : 0}
+      WHERE id = ${id}`;
   },
 
-  cambiarPagado(id: number, pagado: boolean): void {
-    abrirDb()
-      .prepare("UPDATE pedidos_clientes SET pagado = ? WHERE id = ?")
-      .run(pagado ? 1 : 0, id);
+  async cambiarPagado(id: number, pagado: boolean, sql?: Sql): Promise<void> {
+    const db = sql ?? (await abrirDb());
+    await db`UPDATE pedidos_clientes SET pagado = ${pagado ? 1 : 0} WHERE id = ${id}`;
   },
 
-  eliminar(id: number): void {
-    abrirDb().prepare("DELETE FROM pedidos_clientes WHERE id = ?").run(id);
+  async eliminar(id: number, sql?: Sql): Promise<void> {
+    const db = sql ?? (await abrirDb());
+    await db`DELETE FROM pedidos_clientes WHERE id = ${id}`;
   },
 
-  retirarItemsDeProducto(productoId: number): number[] {
-    const db = abrirDb();
+  async retirarItemsDeProducto(productoId: number, sql?: Sql): Promise<number[]> {
+    const db = sql ?? (await abrirDb());
     const afectados = aObjetos<{ pedido_id: number }>(
-      db
-        .prepare(
-          `SELECT DISTINCT pci.pedido_id AS pedido_id
-           FROM pedido_cliente_items pci
-           JOIN pedidos_clientes p ON p.id = pci.pedido_id
-           WHERE pci.producto_id = ? AND p.entregado = 0`,
-        )
-        .all(productoId),
+      await db`
+      SELECT DISTINCT pci.pedido_id AS pedido_id
+      FROM pedido_cliente_items pci
+      JOIN pedidos_clientes p ON p.id = pci.pedido_id
+      WHERE pci.producto_id = ${productoId} AND p.entregado = 0`,
     );
 
-    db.prepare(
-      `DELETE FROM pedido_cliente_items
-       WHERE producto_id = ?
-         AND pedido_id IN (SELECT id FROM pedidos_clientes WHERE entregado = 0)`,
-    ).run(productoId);
+    await db`
+      DELETE FROM pedido_cliente_items
+      WHERE producto_id = ${productoId}
+        AND pedido_id IN (SELECT id FROM pedidos_clientes WHERE entregado = 0)`;
 
     for (const { pedido_id } of afectados) {
-      db.prepare(
-        `UPDATE pedidos_clientes SET total = COALESCE((
-           SELECT SUM(cantidad * precio_unitario) FROM pedido_cliente_items WHERE pedido_id = ?
-         ), 0) WHERE id = ?`,
-      ).run(pedido_id, pedido_id);
+      await db`
+        UPDATE pedidos_clientes SET total = COALESCE((
+          SELECT SUM(cantidad * precio_unitario) FROM pedido_cliente_items WHERE pedido_id = ${pedido_id}
+        ), 0) WHERE id = ${pedido_id}`;
     }
 
     return afectados.map((f) => f.pedido_id);
   },
 
-  listarEntregadosPagados(desde: number, hasta: number): PedidoConItems[] {
-    const db = abrirDb();
+  async listarEntregadosPagados(desde: number, hasta: number, sql?: Sql): Promise<PedidoConItems[]> {
+    const db = sql ?? (await abrirDb());
     const pedidos = aObjetos<PedidoCliente>(
-      db
-        .prepare(
-          "SELECT * FROM pedidos_clientes WHERE entregado = 1 AND pagado = 1 AND fecha_pedido >= ? AND fecha_pedido < ? ORDER BY fecha_pedido",
-        )
-        .all(desde, hasta),
+      await db`
+      SELECT * FROM pedidos_clientes
+      WHERE entregado = 1 AND pagado = 1 AND fecha_pedido >= ${desde} AND fecha_pedido < ${hasta}
+      ORDER BY fecha_pedido`,
     );
-    const stmtItems = db.prepare("SELECT * FROM pedido_cliente_items WHERE pedido_id = ? ORDER BY id");
-    return pedidos.map((p) => ({ ...p, items: aObjetos<PedidoItem>(stmtItems.all(p.id)) }));
+    return Promise.all(
+      pedidos.map(async (p) => ({
+        ...p,
+        items: aObjetos<PedidoItem>(await db`SELECT * FROM pedido_cliente_items WHERE pedido_id = ${p.id} ORDER BY id`),
+      })),
+    );
   },
 
-  unidadesPagadasPorProducto(desde: number, hasta: number): { nombre: string; unidades: number }[] {
-    return aObjetos<{ nombre: string; unidades: number }>(
-      abrirDb()
-        .prepare(
-          `SELECT pci.nombre_producto AS nombre, SUM(pci.cantidad) AS unidades
-           FROM pedido_cliente_items pci
-           JOIN pedidos_clientes p ON p.id = pci.pedido_id
-           WHERE p.entregado = 1 AND p.pagado = 1 AND p.fecha_pedido >= ? AND p.fecha_pedido < ?
-           GROUP BY pci.nombre_producto ORDER BY unidades DESC`,
-        )
-        .all(desde, hasta),
-    );
+  async unidadesPagadasPorProducto(
+    desde: number,
+    hasta: number,
+    sql?: Sql,
+  ): Promise<{ nombre: string; unidades: number }[]> {
+    const db = sql ?? (await abrirDb());
+    const filas = await db`
+      SELECT pci.nombre_producto AS nombre, SUM(pci.cantidad) AS unidades
+      FROM pedido_cliente_items pci
+      JOIN pedidos_clientes p ON p.id = pci.pedido_id
+      WHERE p.entregado = 1 AND p.pagado = 1 AND p.fecha_pedido >= ${desde} AND p.fecha_pedido < ${hasta}
+      GROUP BY pci.nombre_producto ORDER BY unidades DESC`;
+    return filas.map((f) => ({ nombre: f.nombre as string, unidades: Number(f.unidades) }));
   },
 };

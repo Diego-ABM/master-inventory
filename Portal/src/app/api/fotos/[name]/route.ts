@@ -1,10 +1,8 @@
 import { NextResponse } from "next/server";
 
-import { DIRECTORIO_FOTOS } from "@/server/db";
+import { fotoRepo } from "@/server/repositories/fotos";
 
-import { createReadStream, existsSync } from "node:fs";
 import path from "node:path";
-import { Readable } from "node:stream";
 
 const TIPOS: Record<string, string> = {
   ".png": "image/png",
@@ -20,17 +18,13 @@ export async function GET(_req: Request, { params }: { params: Promise<{ name: s
     return NextResponse.json({ error: "Nombre de archivo no válido." }, { status: 400 });
   }
 
-  const ext = path.extname(name).toLowerCase();
-  const contentType = TIPOS[ext];
-  if (!contentType) {
-    return NextResponse.json({ error: "Tipo de archivo no permitido." }, { status: 400 });
-  }
-
-  const ruta = path.join(DIRECTORIO_FOTOS, name);
-  if (!ruta.startsWith(DIRECTORIO_FOTOS + path.sep) || !existsSync(ruta)) {
+  const foto = await fotoRepo.obtenerDatosPorRuta(`/api/fotos/${name}`);
+  if (!foto) {
     return NextResponse.json({ error: "Foto no encontrada." }, { status: 404 });
   }
 
-  const stream = Readable.toWeb(createReadStream(ruta)) as ReadableStream;
-  return new Response(stream, { headers: { "Content-Type": contentType } });
+  const contentType = foto.mime ?? TIPOS[path.extname(name).toLowerCase()] ?? "application/octet-stream";
+  return new Response(new Uint8Array(foto.datos), {
+    headers: { "Content-Type": contentType, "Cache-Control": "public, max-age=31536000, immutable" },
+  });
 }

@@ -8,7 +8,7 @@ export const dynamic = "force-dynamic";
 
 export default async function PaginaEditarProducto({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
-  const producto = productoRepo.obtener(Number(id));
+  const producto = await productoRepo.obtener(Number(id));
   if (!producto) notFound();
 
   return (

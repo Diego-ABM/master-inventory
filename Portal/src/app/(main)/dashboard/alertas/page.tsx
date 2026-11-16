@@ -20,9 +20,11 @@ const ESTILOS_SEMAFORO = {
 
 const ETIQUETAS_SEMAFORO = { rojo: "Urgente", naranja: "Próximo", verde: "Vigente" } as const;
 
-export default function PaginaAlertas() {
-  const vencimientos = productoRepo.listarVencimientos();
-  const agotados = productoRepo.listarAgotados();
+export default async function PaginaAlertas() {
+  const [vencimientos, agotados] = await Promise.all([
+    productoRepo.listarVencimientos(),
+    productoRepo.listarAgotados(),
+  ]);
   const ahora = Date.now();
 
   return (

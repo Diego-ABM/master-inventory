@@ -25,7 +25,7 @@ export default async function PaginaInventario({
   let productos: ProductoListado[];
   let errorCarga = false;
   try {
-    productos = productoRepo.listar({ texto, mascota, categoria });
+    productos = await productoRepo.listar({ texto, mascota, categoria });
   } catch {
     productos = [];
     errorCarga = true;

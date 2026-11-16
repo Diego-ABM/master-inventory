@@ -8,16 +8,17 @@ import { TarjetaProducto } from "../_components/tarjeta-producto";
 
 export const dynamic = "force-dynamic";
 
-export default function PaginaFavoritos() {
-  const favoritos = productoRepo.listarFavoritos();
+export default async function PaginaFavoritos() {
+  const favoritos = await productoRepo.listarFavoritos();
 
   const unidades = new Map<string, number>();
   const desde = 0;
   const hasta = Number.MAX_SAFE_INTEGER;
-  for (const { nombre, unidades: u } of [
-    ...ventaRepo.unidadesPorProducto(desde, hasta),
-    ...pedidoRepo.unidadesPagadasPorProducto(desde, hasta),
-  ]) {
+  const [unidadesVentas, unidadesPedidos] = await Promise.all([
+    ventaRepo.unidadesPorProducto(desde, hasta),
+    pedidoRepo.unidadesPagadasPorProducto(desde, hasta),
+  ]);
+  for (const { nombre, unidades: u } of [...unidadesVentas, ...unidadesPedidos]) {
     unidades.set(nombre, (unidades.get(nombre) ?? 0) + u);
   }
   const ranking = [...unidades.entries()]
