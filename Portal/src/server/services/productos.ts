@@ -6,22 +6,27 @@ import { z } from "zod";
 
 import { normalizarNumero } from "@/lib/domain/moneda";
 import { CATEGORIAS, type DatosProducto, MASCOTAS } from "@/lib/domain/tipos";
-import { DIRECTORIO_FOTOS, transaccion } from "@/server/db";
+import { transaccion } from "@/server/db";
 import { fotoRepo } from "@/server/repositories/fotos";
 import { logRepo } from "@/server/repositories/logs";
 import { pedidoRepo } from "@/server/repositories/pedidos";
 import { productoRepo } from "@/server/repositories/productos";
 
-import { existsSync, mkdirSync, unlinkSync, writeFileSync } from "node:fs";
 import path from "node:path";
 
 const MODULO = "productos";
 const EXTENSIONES_FOTO = new Set([".png", ".jpg", ".jpeg", ".webp"]);
+const MIME_FOTO: Record<string, string> = {
+  ".png": "image/png",
+  ".jpg": "image/jpeg",
+  ".jpeg": "image/jpeg",
+  ".webp": "image/webp",
+};
 
 type Resultado<T = undefined> = { ok: true; data?: T } | { ok: false; mensaje: string };
 
 function fallo(mensaje: string, error?: unknown): Resultado<never> {
-  if (error) logRepo.registrar("ERROR", MODULO, mensaje, String(error));
+  if (error) logRepo.registrarSeguro("ERROR", MODULO, mensaje, String(error));
   return { ok: false, mensaje };
 }
 
@@ -52,8 +57,8 @@ export async function crearProducto(entrada: unknown): Promise<Resultado<{ id: n
   const datos = esquemaProducto.safeParse(entrada);
   if (!datos.success) return fallo(datos.error.issues[0]?.message ?? "Datos no válidos.");
   try {
-    const id = transaccion(() => productoRepo.crear(datos.data));
-    logRepo.registrar("INFO", MODULO, `Producto creado: ${datos.data.nombre} (id ${id}).`);
+    const id = await transaccion((db) => productoRepo.crear(datos.data, db));
+    await logRepo.registrar("INFO", MODULO, `Producto creado: ${datos.data.nombre} (id ${id}).`);
     revalidarInventario();
     return { ok: true, data: { id } };
   } catch (error) {
@@ -65,8 +70,8 @@ export async function actualizarProducto(id: number, entrada: unknown): Promise<
   const datos = esquemaProducto.safeParse(entrada);
   if (!datos.success) return fallo(datos.error.issues[0]?.message ?? "Datos no válidos.");
   try {
-    transaccion(() => productoRepo.actualizar(id, datos.data as DatosProducto));
-    logRepo.registrar("INFO", MODULO, `Producto ${id} actualizado.`);
+    await transaccion((db) => productoRepo.actualizar(id, datos.data as DatosProducto, db));
+    await logRepo.registrar("INFO", MODULO, `Producto ${id} actualizado.`);
     revalidarInventario();
     return { ok: true };
   } catch (error) {
@@ -76,22 +81,16 @@ export async function actualizarProducto(id: number, entrada: unknown): Promise<
 
 export async function eliminarProducto(id: number): Promise<Resultado<{ pedidosAfectados: number[] }>> {
   try {
-    const resultado = transaccion(() => {
-      const producto = productoRepo.obtener(id);
+    const resultado = await transaccion(async (db) => {
+      const producto = await productoRepo.obtener(id, db);
       if (!producto) throw new Error("El producto no existe.");
 
-      const pedidosAfectados = pedidoRepo.retirarItemsDeProducto(id);
-      const rutasFisicas = producto.fotos.map((f) => f.ruta_archivo).filter((r) => r.startsWith("/api/fotos/"));
-      productoRepo.eliminar(id);
-      return { pedidosAfectados, rutasFisicas, nombre: producto.nombre };
+      const pedidosAfectados = await pedidoRepo.retirarItemsDeProducto(id, db);
+      await productoRepo.eliminar(id, db);
+      return { pedidosAfectados, nombre: producto.nombre };
     });
 
-    for (const ruta of resultado.rutasFisicas) {
-      const archivo = path.join(DIRECTORIO_FOTOS, path.basename(ruta));
-      if (existsSync(archivo)) unlinkSync(archivo);
-    }
-
-    logRepo.registrar(
+    await logRepo.registrar(
       "INFO",
       MODULO,
       `Producto eliminado: ${resultado.nombre}. Pedidos pendientes afectados: ${resultado.pedidosAfectados.length}.`,
@@ -108,7 +107,7 @@ export async function ajustarStock(id: number, delta: number): Promise<Resultado
   const ajuste = normalizarNumero(delta);
   if (ajuste === 0) return fallo("El ajuste debe ser distinto de cero.");
   try {
-    transaccion(() => productoRepo.ajustarStock(id, ajuste));
+    await transaccion((db) => productoRepo.ajustarStock(id, ajuste, db));
     revalidarInventario();
     return { ok: true };
   } catch (error) {
@@ -118,7 +117,7 @@ export async function ajustarStock(id: number, delta: number): Promise<Resultado
 
 export async function marcarFavorito(id: number, es: boolean): Promise<Resultado> {
   try {
-    transaccion(() => productoRepo.marcarFavorito(id, es));
+    await transaccion((db) => productoRepo.marcarFavorito(id, es, db));
     revalidarInventario();
     return { ok: true };
   } catch (error) {
@@ -128,7 +127,7 @@ export async function marcarFavorito(id: number, es: boolean): Promise<Resultado
 
 export async function marcarPedidoProveedor(id: number, pedir: boolean, nota?: string): Promise<Resultado> {
   try {
-    transaccion(() => productoRepo.marcarPedidoProveedor(id, pedir, nota));
+    await transaccion((db) => productoRepo.marcarPedidoProveedor(id, pedir, nota, db));
     revalidarInventario();
     revalidatePath("/dashboard/reportes");
     return { ok: true };
@@ -144,16 +143,15 @@ export async function agregarFoto(productoId: number, formData: FormData): Promi
   if (!EXTENSIONES_FOTO.has(ext)) return fallo("Solo se permiten imágenes png, jpg, jpeg o webp.");
 
   try {
-    const bytes = Buffer.from(await archivo.arrayBuffer());
-    const fotoId = transaccion(() => {
-      const orden = fotoRepo.contarPorProducto(productoId);
-      const id = fotoRepo.agregar(productoId, "/api/fotos/pendiente", orden);
-      fotoRepo.actualizarRuta(id, `/api/fotos/${id}${ext}`);
+    const bytes = new Uint8Array(await archivo.arrayBuffer());
+    const mime = archivo.type || MIME_FOTO[ext];
+    const fotoId = await transaccion(async (db) => {
+      const orden = await fotoRepo.contarPorProducto(productoId, db);
+      const id = await fotoRepo.agregar(productoId, "/api/fotos/pendiente", orden, bytes, mime, db);
+      await fotoRepo.actualizarRuta(id, `/api/fotos/${id}${ext}`, db);
       return id;
     });
-    mkdirSync(DIRECTORIO_FOTOS, { recursive: true });
-    writeFileSync(path.join(DIRECTORIO_FOTOS, `${fotoId}${ext}`), bytes);
-    logRepo.registrar("INFO", MODULO, `Foto agregada al producto ${productoId}.`);
+    await logRepo.registrar("INFO", MODULO, `Foto agregada al producto ${productoId}.`);
     revalidarInventario();
     return { ok: true, data: { id: fotoId } };
   } catch (error) {
@@ -167,16 +165,11 @@ export async function agregarFoto(productoId: number, formData: FormData): Promi
 
 export async function quitarFoto(fotoId: number): Promise<Resultado> {
   try {
-    const ruta = transaccion(() => {
-      const foto = fotoRepo.obtener(fotoId);
+    await transaccion(async (db) => {
+      const foto = await fotoRepo.obtener(fotoId, db);
       if (!foto) throw new Error("La foto no existe.");
-      fotoRepo.quitar(fotoId);
-      return foto.ruta_archivo;
+      await fotoRepo.quitar(fotoId, db);
     });
-    if (ruta.startsWith("/api/fotos/")) {
-      const archivo = path.join(DIRECTORIO_FOTOS, path.basename(ruta));
-      if (existsSync(archivo)) unlinkSync(archivo);
-    }
     revalidarInventario();
     return { ok: true };
   } catch (error) {

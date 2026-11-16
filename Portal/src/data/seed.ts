@@ -1,7 +1,6 @@
 import type { Categoria, Mascota } from "@/lib/domain/tipos";
 
-import { readFileSync } from "node:fs";
-import path from "node:path";
+import productosSeed from "../../seed/productos_seed.json";
 
 export interface ProductoSeed {
   nombre: string;
@@ -19,9 +18,6 @@ export interface ProductoSeed {
   fechaVencimiento?: number | null;
 }
 
-const RUTA_SEED = path.join(process.cwd(), "seed", "productos_seed.json");
-
 export function cargarSemilla(): ProductoSeed[] {
-  const crudo = readFileSync(RUTA_SEED, "utf8");
-  return JSON.parse(crudo) as ProductoSeed[];
+  return productosSeed as ProductoSeed[];
 }

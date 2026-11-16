@@ -8,8 +8,8 @@ const NOVENTA_DIAS_MS = 90 * 24 * 60 * 60 * 1000;
 
 export async function limpiarLogs(): Promise<{ ok: true; borrados: number } | { ok: false; mensaje: string }> {
   try {
-    const borrados = logRepo.limpiarAntiguos(Date.now() - NOVENTA_DIAS_MS);
-    logRepo.registrar("INFO", "logs", `Limpieza manual: ${borrados} registro(s) antiguo(s) eliminado(s).`);
+    const borrados = await logRepo.limpiarAntiguos(Date.now() - NOVENTA_DIAS_MS);
+    await logRepo.registrar("INFO", "logs", `Limpieza manual: ${borrados} registro(s) antiguo(s) eliminado(s).`);
     revalidatePath("/dashboard/respaldo");
     return { ok: true, borrados };
   } catch {

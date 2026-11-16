@@ -2,9 +2,9 @@ import { NextResponse } from "next/server";
 
 import { exportarRespaldo, importarRespaldo } from "@/server/services/respaldo";
 
-export function GET() {
+export async function GET() {
   try {
-    const { json, nombre } = exportarRespaldo();
+    const { json, nombre } = await exportarRespaldo();
     return new Response(json, {
       headers: {
         "Content-Type": "application/json; charset=utf-8",
@@ -24,7 +24,7 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "No se recibió ningún archivo." }, { status: 400 });
     }
     const contenido = await archivo.text();
-    const resultado = importarRespaldo(contenido);
+    const resultado = await importarRespaldo(contenido);
     if (!resultado.ok) {
       return NextResponse.json({ error: resultado.mensaje }, { status: 400 });
     }

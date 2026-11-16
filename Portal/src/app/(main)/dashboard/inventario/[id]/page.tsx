@@ -37,7 +37,7 @@ function Dato({ etiqueta, valor }: { etiqueta: string; valor: React.ReactNode })
 
 export default async function PaginaDetalleProducto({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
-  const producto = productoRepo.obtener(Number(id));
+  const producto = await productoRepo.obtener(Number(id));
   if (!producto) notFound();
 
   const ahora = Date.now();

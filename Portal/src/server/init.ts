@@ -2,17 +2,17 @@ import { ejecutarInit as initDb } from "@/server/db";
 import { logRepo } from "@/server/repositories/logs";
 import { cargarSemillaInicial } from "@/server/services/seed";
 
-export function ejecutarInit(): void {
+export async function ejecutarInit(): Promise<void> {
   try {
-    initDb();
+    await initDb();
   } catch (error) {
     console.error("No se pudo inicializar la base de datos:", error);
     return;
   }
 
   try {
-    cargarSemillaInicial();
+    await cargarSemillaInicial();
   } catch (error) {
-    logRepo.registrar("WARN", "init", "La carga del catálogo inicial falló; la app sigue usable.", String(error));
+    logRepo.registrarSeguro("WARN", "init", "La carga del catálogo inicial falló; la app sigue usable.", String(error));
   }
 }

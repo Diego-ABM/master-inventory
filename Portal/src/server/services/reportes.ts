@@ -3,12 +3,12 @@ import { pedidoRepo } from "@/server/repositories/pedidos";
 import { productoRepo } from "@/server/repositories/productos";
 import { ventaRepo } from "@/server/repositories/ventas";
 
-export function obtenerReporte(periodo: Periodo): ResultadoReporte {
+export async function obtenerReporte(periodo: Periodo): Promise<ResultadoReporte> {
   const { desde, hasta } = rangoPeriodo(periodo);
-  const ventas = ventaRepo.listar({ desde, hasta });
-  const pedidos = pedidoRepo.listarEntregadosPagados(desde, hasta);
-  const productos = productoRepo.listarTodos();
-  const marcados = productoRepo.listarPedidoProveedor();
+  const ventas = await ventaRepo.listar({ desde, hasta });
+  const pedidos = await pedidoRepo.listarEntregadosPagados(desde, hasta);
+  const productos = await productoRepo.listarTodos();
+  const marcados = await productoRepo.listarPedidoProveedor();
   return calcularReporte(ventas, pedidos, productos, marcados);
 }
 

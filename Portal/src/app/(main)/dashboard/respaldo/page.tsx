@@ -12,8 +12,8 @@ import { TablaLogs } from "./_components/tabla-logs";
 
 export const dynamic = "force-dynamic";
 
-export default function PaginaRespaldo() {
-  const logs = logRepo.listar(200);
+export default async function PaginaRespaldo() {
+  const logs = await logRepo.listar(200);
 
   return (
     <div className="flex flex-col gap-6">

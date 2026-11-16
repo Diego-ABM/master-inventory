@@ -13,9 +13,8 @@ import { TarjetaPedido } from "./_components/tarjeta-pedido";
 
 export const dynamic = "force-dynamic";
 
-export default function PaginaPedidos() {
-  const pedidos = pedidoRepo.listar();
-  const marcados = productoRepo.listarPedidoProveedor();
+export default async function PaginaPedidos() {
+  const [pedidos, marcados] = await Promise.all([pedidoRepo.listar(), productoRepo.listarPedidoProveedor()]);
 
   return (
     <div className="flex flex-col gap-4">

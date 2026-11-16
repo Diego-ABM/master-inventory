@@ -41,7 +41,7 @@ export default async function PaginaReportes({
   const mes = Number.isInteger(mesParam) && mesParam >= 1 && mesParam <= 12 ? mesParam : ahora.getMonth() + 1;
 
   const periodo: Periodo = vista === "anual" ? { anual: true, anio } : { anual: false, anio, mes };
-  const reporte = obtenerReporte(periodo);
+  const reporte = await obtenerReporte(periodo);
   const etiqueta =
     vista === "anual" ? `Año ${anio}` : `${capitalizar(formatoMes.format(new Date(anio, mes - 1, 1)))} ${anio}`;
   const hayRegistros = reporte.rotacion.length > 0 || reporte.gananciaBruta > 0;

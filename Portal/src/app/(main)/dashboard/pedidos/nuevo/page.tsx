@@ -4,10 +4,13 @@ import { FormularioPedido } from "./_components/formulario-pedido";
 
 export const dynamic = "force-dynamic";
 
-export default function PaginaNuevoPedido() {
-  const productos = productoRepo
-    .listarTodos()
-    .map((p) => ({ id: p.id, nombre: p.nombre, precio_venta: p.precio_venta, cantidad_stock: p.cantidad_stock }));
+export default async function PaginaNuevoPedido() {
+  const productos = (await productoRepo.listarTodos()).map((p) => ({
+    id: p.id,
+    nombre: p.nombre,
+    precio_venta: p.precio_venta,
+    cantidad_stock: p.cantidad_stock,
+  }));
 
   return (
     <div className="flex flex-col gap-4">

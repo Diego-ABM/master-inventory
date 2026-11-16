@@ -14,7 +14,7 @@ const MODULO = "ventas";
 type Resultado<T = undefined> = { ok: true; data?: T } | { ok: false; mensaje: string };
 
 function fallo(mensaje: string, error?: unknown): Resultado<never> {
-  if (error) logRepo.registrar("ERROR", MODULO, mensaje, String(error));
+  if (error) logRepo.registrarSeguro("ERROR", MODULO, mensaje, String(error));
   return { ok: false, mensaje };
 }
 
@@ -23,11 +23,11 @@ export async function registrarVenta(productoId: number, cantidad: number): Prom
   if (!Number.isInteger(cantidad) || cantidad <= 0) return fallo("La cantidad debe ser un entero mayor que cero.");
 
   try {
-    const id = transaccion(() => {
-      const producto = productoRepo.obtener(productoId);
+    const id = await transaccion(async (db) => {
+      const producto = await productoRepo.obtener(productoId, db);
       if (!producto) throw new Error("PRODUCTO_NO_EXISTE");
       if (!validarCantidad(cantidad, producto.cantidad_stock)) throw new Error("CANTIDAD_INVALIDA");
-      productoRepo.ajustarStock(productoId, -cantidad);
+      await productoRepo.ajustarStock(productoId, -cantidad, db);
       const item = {
         producto_id: producto.id,
         nombre_producto: producto.nombre,
@@ -35,9 +35,9 @@ export async function registrarVenta(productoId: number, cantidad: number): Prom
         precio_compra: producto.precio_compra,
         precio_venta: producto.precio_venta,
       };
-      return ventaRepo.crear({ fecha: Date.now(), total: calcularTotalVenta(item) }, item);
+      return ventaRepo.crear({ fecha: Date.now(), total: calcularTotalVenta(item) }, item, db);
     });
-    logRepo.registrar("INFO", MODULO, `Venta ${id} registrada (${cantidad} unidad(es)).`);
+    await logRepo.registrar("INFO", MODULO, `Venta ${id} registrada (${cantidad} unidad(es)).`);
     revalidatePath("/dashboard/ventas");
     revalidatePath("/dashboard/inventario");
     revalidatePath("/dashboard/favoritos");
@@ -53,16 +53,16 @@ export async function registrarVenta(productoId: number, cantidad: number): Prom
 
 export async function eliminarVenta(id: number): Promise<Resultado> {
   try {
-    transaccion(() => {
-      const eliminada = ventaRepo.eliminar(id);
+    await transaccion(async (db) => {
+      const eliminada = await ventaRepo.eliminar(id, db);
       if (!eliminada) throw new Error("VENTA_NO_EXISTE");
       for (const item of eliminada.items) {
-        if (item.producto_id != null && productoRepo.obtener(item.producto_id)) {
-          productoRepo.ajustarStock(item.producto_id, item.cantidad);
+        if (item.producto_id != null && (await productoRepo.obtener(item.producto_id, db))) {
+          await productoRepo.ajustarStock(item.producto_id, item.cantidad, db);
         }
       }
     });
-    logRepo.registrar("INFO", MODULO, `Venta ${id} eliminada; stock repuesto.`);
+    await logRepo.registrar("INFO", MODULO, `Venta ${id} eliminada; stock repuesto.`);
     revalidatePath("/dashboard/ventas");
     revalidatePath("/dashboard/inventario");
     revalidatePath("/dashboard/favoritos");

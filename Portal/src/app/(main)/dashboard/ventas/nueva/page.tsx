@@ -14,7 +14,7 @@ export default async function PaginaNuevaVenta({
   const params = await searchParams;
   const productoId = Number(params.producto);
   if (!Number.isInteger(productoId) || productoId <= 0) redirect("/dashboard/inventario");
-  const producto = productoRepo.obtener(productoId);
+  const producto = await productoRepo.obtener(productoId);
   if (!producto) notFound();
 
   return (
