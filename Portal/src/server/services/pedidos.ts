@@ -4,7 +4,7 @@ import { revalidatePath } from "next/cache";
 
 import { z } from "zod";
 
-import { calcularTotalPedido, debeDescontarStock, puedeEliminarse } from "@/lib/domain/pedidos";
+import { calcularTotalPedido, debeDescontarStock, etiquetaItemProducto, puedeEliminarse } from "@/lib/domain/pedidos";
 import { validarCantidad } from "@/lib/domain/stock";
 import { transaccion } from "@/server/db";
 import { logRepo } from "@/server/repositories/logs";
@@ -56,7 +56,7 @@ export async function crearPedido(entrada: unknown): Promise<Resultado<{ id: num
           if (!validarCantidad(item.cantidad, producto.cantidad_stock)) throw new Error("CANTIDAD_INVALIDA");
           return {
             producto_id: producto.id,
-            nombre_producto: producto.nombre,
+            nombre_producto: etiquetaItemProducto(producto),
             cantidad: item.cantidad,
             precio_compra: producto.precio_compra,
             precio_unitario: producto.precio_venta,

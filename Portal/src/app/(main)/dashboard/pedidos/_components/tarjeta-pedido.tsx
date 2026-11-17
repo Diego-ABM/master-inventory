@@ -82,7 +82,7 @@ export function TarjetaPedido({ pedido }: { pedido: PedidoConItems }) {
           {pedido.items.map((item) => (
             <li key={item.id} className="flex justify-between gap-2">
               <span className="truncate">
-                {item.cantidad} × {item.nombre_producto}
+                {item.cantidad} × {item.nombre_producto || "Producto sin nombre"}
                 {item.producto_id == null && <span className="text-xs"> (personalizado)</span>}
               </span>
               <span className="whitespace-nowrap">{formatearCOP(item.cantidad * item.precio_unitario)}</span>

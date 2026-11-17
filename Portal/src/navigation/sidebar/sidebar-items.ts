@@ -2,6 +2,7 @@ import {
   Bell,
   DatabaseBackup,
   Heart,
+  LayoutDashboard,
   type LucideIcon,
   Package,
   ReceiptText,
@@ -52,6 +53,12 @@ export const sidebarItems: NavGroup[] = [
     id: 1,
     label: "Secciones",
     items: [
+      {
+        id: "panel",
+        title: "Panel",
+        url: "/dashboard",
+        icon: LayoutDashboard,
+      },
       {
         id: "inventario",
         title: "Inventario",

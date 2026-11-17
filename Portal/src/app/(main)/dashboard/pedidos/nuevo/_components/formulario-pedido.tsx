@@ -193,7 +193,7 @@ export function FormularioPedido({ productos }: { productos: ProductoOpcion[] })
               {items.map((item, i) => (
                 <li key={item.clave} className="flex items-center justify-between gap-2 text-sm">
                   <span className="truncate">
-                    {item.cantidad} × {item.nombre_producto}
+                    {item.cantidad} × {item.nombre_producto || "Producto sin nombre"}
                     {item.producto_id == null && (
                       <span className="text-muted-foreground text-xs"> (personalizado)</span>
                     )}

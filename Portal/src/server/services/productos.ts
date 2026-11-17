@@ -155,11 +155,10 @@ export async function agregarFoto(productoId: number, formData: FormData): Promi
     revalidarInventario();
     return { ok: true, data: { id: fotoId } };
   } catch (error) {
-    const mensaje =
-      error instanceof Error && error.message.includes("5 fotos")
-        ? "El producto ya tiene el máximo de 5 fotos."
-        : "No se pudo agregar la foto.";
-    return fallo(mensaje, error);
+    if (error instanceof Error && error.message.includes("5 fotos")) {
+      return fallo("El producto ya tiene el máximo de 5 fotos.");
+    }
+    return fallo("No se pudo agregar la foto.", error);
   }
 }
 

@@ -7,6 +7,7 @@ import { Plus, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "@/components/ui/toast";
 import type { FotoProducto } from "@/lib/domain/tipos";
+import { comprimirFoto } from "@/lib/imagen";
 import { agregarFoto, quitarFoto } from "@/server/services/productos";
 
 export function GaleriaFotos({ productoId, fotos }: { productoId: number; fotos: FotoProducto[] }) {
@@ -15,9 +16,16 @@ export function GaleriaFotos({ productoId, fotos }: { productoId: number; fotos:
   const puedeAgregar = fotos.length < 5;
 
   const subir = (archivo: File) => {
-    const formData = new FormData();
-    formData.set("foto", archivo);
     startTransition(async () => {
+      let foto: File;
+      try {
+        foto = await comprimirFoto(archivo);
+      } catch (error) {
+        toast.add({ title: error instanceof Error ? error.message : "No se pudo leer la imagen.", type: "error" });
+        return;
+      }
+      const formData = new FormData();
+      formData.set("foto", foto);
       const resultado = await agregarFoto(productoId, formData);
       if (!resultado.ok) toast.add({ title: resultado.mensaje, type: "error" });
     });
