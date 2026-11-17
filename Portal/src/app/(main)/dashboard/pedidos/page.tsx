@@ -20,7 +20,7 @@ export default async function PaginaPedidos() {
     <div className="flex flex-col gap-4">
       <div className="flex items-center justify-between gap-2">
         <h1 className="text-xl font-semibold">Pedidos</h1>
-        <Button render={<Link href="/dashboard/pedidos/nuevo" />}>
+        <Button render={<Link href="/dashboard/pedidos/nuevo" />} nativeButton={false}>
           <Plus className="size-4" /> Nuevo pedido
         </Button>
       </div>

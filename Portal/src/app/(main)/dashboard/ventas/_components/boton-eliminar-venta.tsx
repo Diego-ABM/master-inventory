@@ -36,8 +36,11 @@ export function BotonEliminarVenta({ ventaId }: { ventaId: number }) {
 
   return (
     <AlertDialog open={abierto} onOpenChange={setAbierto}>
-      <AlertDialogTrigger render={<Button variant="ghost" size="icon" className="size-8" />}>
-        <Trash2 className="size-4" />
+      <AlertDialogTrigger
+        render={<Button variant="ghost" size="icon" className="size-8" />}
+        aria-label="Eliminar venta"
+      >
+        <Trash2 className="size-4" aria-hidden />
       </AlertDialogTrigger>
       <AlertDialogContent>
         <AlertDialogHeader>

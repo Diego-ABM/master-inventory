@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useEffect, useState, useTransition } from "react";
 
 import { useRouter } from "next/navigation";
 
@@ -67,7 +67,7 @@ export function FormularioProducto({ producto }: { producto?: ProductoConFotos }
     handleSubmit,
     setValue,
     watch,
-    formState: { errors },
+    formState: { errors, isDirty },
   } = useForm<Valores>({
     resolver: zodResolver(esquema),
     defaultValues: {
@@ -85,6 +85,13 @@ export function FormularioProducto({ producto }: { producto?: ProductoConFotos }
       nota_advertencia: producto?.nota_advertencia ?? "",
     },
   });
+
+  useEffect(() => {
+    if (!isDirty) return;
+    const avisar = (e: BeforeUnloadEvent) => e.preventDefault();
+    window.addEventListener("beforeunload", avisar);
+    return () => window.removeEventListener("beforeunload", avisar);
+  }, [isDirty]);
 
   const enviar = handleSubmit((valores) => {
     const datos = {
@@ -164,9 +171,9 @@ export function FormularioProducto({ producto }: { producto?: ProductoConFotos }
           </div>
 
           <div className="flex flex-col gap-1.5">
-            <Label>Mascota</Label>
+            <Label id="label-mascota">Mascota</Label>
             <Select value={watch("mascota")} onValueChange={(v) => setValue("mascota", v as Valores["mascota"])}>
-              <SelectTrigger>
+              <SelectTrigger aria-labelledby="label-mascota">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
@@ -179,9 +186,9 @@ export function FormularioProducto({ producto }: { producto?: ProductoConFotos }
             </Select>
           </div>
           <div className="flex flex-col gap-1.5">
-            <Label>Categoría</Label>
+            <Label id="label-categoria">Categoría</Label>
             <Select value={watch("categoria")} onValueChange={(v) => setValue("categoria", v as Valores["categoria"])}>
-              <SelectTrigger>
+              <SelectTrigger aria-labelledby="label-categoria">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>

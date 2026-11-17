@@ -1,6 +1,6 @@
 import type { ReactNode } from "react";
 
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 
 import { Toaster } from "@/components/ui/toast";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -15,6 +15,14 @@ import "./globals.css";
 export const metadata: Metadata = {
   title: APP_CONFIG.meta.title,
   description: APP_CONFIG.meta.description,
+};
+
+export const viewport: Viewport = {
+  viewportFit: "cover",
+  themeColor: [
+    { media: "(prefers-color-scheme: light)", color: "#ffffff" },
+    { media: "(prefers-color-scheme: dark)", color: "#0a0a0a" },
+  ],
 };
 
 export default function RootLayout({ children }: Readonly<{ children: ReactNode }>) {

@@ -42,7 +42,7 @@ export default async function PaginaRespaldo() {
           <CardTitle>Reportes</CardTitle>
         </CardHeader>
         <CardContent>
-          <Button variant="outline" render={<Link href="/dashboard/reportes" />}>
+          <Button variant="outline" render={<Link href="/dashboard/reportes" />} nativeButton={false}>
             <ScrollText className="size-4" /> Ir a reportes
           </Button>
         </CardContent>

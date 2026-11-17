@@ -52,7 +52,11 @@ export default async function PaginaDetalleProducto({ params }: { params: Promis
           <BotonFavorito productoId={producto.id} esFavorito={producto.es_favorito === 1} />
         </div>
         <div className="flex gap-2">
-          <Button variant="outline" render={<Link href={`/dashboard/inventario/${producto.id}/editar`} />}>
+          <Button
+            variant="outline"
+            render={<Link href={`/dashboard/inventario/${producto.id}/editar`} />}
+            nativeButton={false}
+          >
             <Pencil className="size-4" /> Editar
           </Button>
           <BotonEliminarProducto productoId={producto.id} nombre={producto.nombre} />
@@ -118,7 +122,7 @@ export default async function PaginaDetalleProducto({ params }: { params: Promis
                   <span className="text-muted-foreground text-xs">Mínimo: {producto.stock_minimo}</span>
                 </div>
               </div>
-              <Button render={<Link href={`/dashboard/ventas/nueva?producto=${producto.id}`} />}>
+              <Button render={<Link href={`/dashboard/ventas/nueva?producto=${producto.id}`} />} nativeButton={false}>
                 <ShoppingCart className="size-4" /> Registrar venta
               </Button>
             </CardContent>

@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useState, useTransition } from "react";
+import { useEffect, useRef, useState, useTransition } from "react";
 
 import { useRouter } from "next/navigation";
 
@@ -44,6 +44,14 @@ export function FormularioPedido({ productos }: { productos: ProductoOpcion[] })
   const siguienteClave = useRef(1);
 
   const total = items.reduce((acc, i) => acc + i.cantidad * i.precio_unitario, 0);
+  const hayCambios = cliente !== "" || contacto !== "" || items.length > 0;
+
+  useEffect(() => {
+    if (!hayCambios) return;
+    const avisar = (e: BeforeUnloadEvent) => e.preventDefault();
+    window.addEventListener("beforeunload", avisar);
+    return () => window.removeEventListener("beforeunload", avisar);
+  }, [hayCambios]);
 
   const agregarCatalogo = () => {
     const producto = productos.find((p) => String(p.id) === productoSel);
@@ -114,6 +122,9 @@ export function FormularioPedido({ productos }: { productos: ProductoOpcion[] })
         return;
       }
       toast.add({ title: "Pedido creado.", type: "success" });
+      setCliente("");
+      setContacto("");
+      setItems([]);
       router.push("/dashboard/pedidos");
     });
   };
@@ -143,10 +154,10 @@ export function FormularioPedido({ productos }: { productos: ProductoOpcion[] })
         <CardContent className="flex flex-col gap-4">
           <div className="flex flex-col gap-2 sm:flex-row sm:items-end">
             <div className="flex flex-1 flex-col gap-1.5">
-              <Label>Producto del catálogo</Label>
+              <Label id="label-producto-catalogo">Producto del catálogo</Label>
               <Select value={productoSel} onValueChange={(v) => setProductoSel(v ?? "")}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Selecciona un producto" />
+                <SelectTrigger aria-labelledby="label-producto-catalogo">
+                  <SelectValue placeholder="Selecciona un producto…" />
                 </SelectTrigger>
                 <SelectContent>
                   {productos.map((p) => (
@@ -158,8 +169,13 @@ export function FormularioPedido({ productos }: { productos: ProductoOpcion[] })
               </Select>
             </div>
             <div className="flex w-24 flex-col gap-1.5">
-              <Label>Cantidad</Label>
-              <Input inputMode="numeric" value={cantidadSel} onChange={(e) => setCantidadSel(e.target.value)} />
+              <Label htmlFor="cantidad-catalogo">Cantidad</Label>
+              <Input
+                id="cantidad-catalogo"
+                inputMode="numeric"
+                value={cantidadSel}
+                onChange={(e) => setCantidadSel(e.target.value)}
+              />
             </div>
             <Button type="button" variant="outline" onClick={agregarCatalogo}>
               <Plus className="size-4" /> Agregar
@@ -168,20 +184,31 @@ export function FormularioPedido({ productos }: { productos: ProductoOpcion[] })
 
           <div className="flex flex-col gap-2 border-t pt-3 sm:flex-row sm:items-end">
             <div className="flex flex-1 flex-col gap-1.5">
-              <Label>Ítem personalizado</Label>
+              <Label htmlFor="item-personalizado">Ítem personalizado</Label>
               <Input
+                id="item-personalizado"
                 value={nombreLibre}
                 onChange={(e) => setNombreLibre(e.target.value)}
                 placeholder="Descripción libre…"
               />
             </div>
             <div className="flex w-28 flex-col gap-1.5">
-              <Label>Precio</Label>
-              <Input inputMode="numeric" value={precioLibre} onChange={(e) => setPrecioLibre(e.target.value)} />
+              <Label htmlFor="precio-libre">Precio</Label>
+              <Input
+                id="precio-libre"
+                inputMode="numeric"
+                value={precioLibre}
+                onChange={(e) => setPrecioLibre(e.target.value)}
+              />
             </div>
             <div className="flex w-24 flex-col gap-1.5">
-              <Label>Cantidad</Label>
-              <Input inputMode="numeric" value={cantidadLibre} onChange={(e) => setCantidadLibre(e.target.value)} />
+              <Label htmlFor="cantidad-libre">Cantidad</Label>
+              <Input
+                id="cantidad-libre"
+                inputMode="numeric"
+                value={cantidadLibre}
+                onChange={(e) => setCantidadLibre(e.target.value)}
+              />
             </div>
             <Button type="button" variant="outline" onClick={agregarLibre}>
               <Plus className="size-4" /> Agregar
@@ -192,16 +219,24 @@ export function FormularioPedido({ productos }: { productos: ProductoOpcion[] })
             <ul className="flex flex-col gap-1 border-t pt-3">
               {items.map((item, i) => (
                 <li key={item.clave} className="flex items-center justify-between gap-2 text-sm">
-                  <span className="truncate">
+                  <span className="truncate tabular-nums">
                     {item.cantidad} × {item.nombre_producto || "Producto sin nombre"}
                     {item.producto_id == null && (
                       <span className="text-muted-foreground text-xs"> (personalizado)</span>
                     )}
                   </span>
                   <span className="flex items-center gap-2">
-                    <span className="whitespace-nowrap">{formatearCOP(item.cantidad * item.precio_unitario)}</span>
-                    <Button variant="ghost" size="icon" className="size-6" onClick={() => quitar(i)}>
-                      <X className="size-3" />
+                    <span className="whitespace-nowrap tabular-nums">
+                      {formatearCOP(item.cantidad * item.precio_unitario)}
+                    </span>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="size-6"
+                      aria-label={`Quitar ${item.nombre_producto || "ítem"}`}
+                      onClick={() => quitar(i)}
+                    >
+                      <X className="size-3" aria-hidden />
                     </Button>
                   </span>
                 </li>
@@ -209,7 +244,7 @@ export function FormularioPedido({ productos }: { productos: ProductoOpcion[] })
             </ul>
           )}
 
-          <p className="text-right text-lg font-semibold">Total: {formatearCOP(total)}</p>
+          <p className="text-right text-lg font-semibold tabular-nums">Total: {formatearCOP(total)}</p>
         </CardContent>
       </Card>
 

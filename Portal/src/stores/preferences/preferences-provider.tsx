@@ -36,6 +36,22 @@ function readDomPreferences(): PreferenceValueMap {
   return values;
 }
 
+function updateThemeColorMeta() {
+  const background = getComputedStyle(document.documentElement).getPropertyValue("--background").trim();
+  if (!background) return;
+
+  let metas = document.head.querySelectorAll('meta[name="theme-color"]');
+  if (metas.length === 0) {
+    const meta = document.createElement("meta");
+    meta.setAttribute("name", "theme-color");
+    document.head.appendChild(meta);
+    metas = document.head.querySelectorAll('meta[name="theme-color"]');
+  }
+  metas.forEach((meta) => {
+    meta.setAttribute("content", background);
+  });
+}
+
 export function PreferencesStoreProvider({
   children,
   initialValues,
@@ -51,6 +67,7 @@ export function PreferencesStoreProvider({
       resolvedThemeMode: document.documentElement.classList.contains("dark") ? "dark" : "light",
       isSynced: true,
     });
+    updateThemeColorMeta();
   }, [store]);
 
   useEffect(() => {
@@ -72,6 +89,12 @@ export function PreferencesStoreProvider({
     const unsubscribeStore = store.subscribe((state, previousState) => {
       if (state.values.theme_mode !== previousState.values.theme_mode) {
         subscribeForMode(state.values.theme_mode);
+      }
+      if (
+        state.resolvedThemeMode !== previousState.resolvedThemeMode ||
+        state.values.theme_preset !== previousState.values.theme_preset
+      ) {
+        updateThemeColorMeta();
       }
     });
 

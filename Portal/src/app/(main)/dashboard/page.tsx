@@ -4,6 +4,7 @@ import { Bell, Package, Plus, ReceiptText, ShoppingBag, ShoppingCart } from "luc
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Empty, EmptyDescription, EmptyHeader, EmptyTitle } from "@/components/ui/empty";
 import { formatearCOP } from "@/lib/domain/moneda";
 import { diasRestantes, semaforo } from "@/lib/domain/vencimiento";
 import { pedidoRepo } from "@/server/repositories/pedidos";
@@ -39,7 +40,7 @@ function TarjetaResumen({
           <CardTitle className="text-muted-foreground text-sm font-medium">{titulo}</CardTitle>
         </CardHeader>
         <CardContent className="flex flex-col gap-0.5">
-          <p className="text-2xl font-semibold">{valor}</p>
+          <p className="text-2xl font-semibold tabular-nums">{valor}</p>
           <p className="text-muted-foreground text-xs">{detalle}</p>
         </CardContent>
       </Card>
@@ -99,7 +100,13 @@ export default async function PaginaPanel() {
         <h2 className="text-base font-medium">Accesos rápidos</h2>
         <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
           {ACCESOS_RAPIDOS.map(({ href, etiqueta, icono: Icono }) => (
-            <Button key={href} variant="outline" render={<Link href={href} />} className="h-auto flex-col gap-2 py-4">
+            <Button
+              key={href}
+              variant="outline"
+              render={<Link href={href} />}
+              nativeButton={false}
+              className="h-auto flex-col gap-2 py-4"
+            >
               <Icono className="size-5" />
               <span>{etiqueta}</span>
             </Button>
@@ -112,7 +119,12 @@ export default async function PaginaPanel() {
           <ReceiptText className="size-4" aria-hidden /> Ventas de hoy
         </h2>
         {ventasHoy.length === 0 ? (
-          <p className="text-muted-foreground text-sm">Aún no hay ventas registradas hoy.</p>
+          <Empty>
+            <EmptyHeader>
+              <EmptyTitle>Sin ventas hoy</EmptyTitle>
+              <EmptyDescription>Aún no hay ventas registradas hoy.</EmptyDescription>
+            </EmptyHeader>
+          </Empty>
         ) : (
           <Card>
             <CardContent className="flex flex-col gap-1 p-3">
@@ -121,7 +133,7 @@ export default async function PaginaPanel() {
                   <span className="truncate">
                     {venta.items.map((i) => `${i.cantidad} × ${i.nombre_producto}`).join(", ")}
                   </span>
-                  <span className="whitespace-nowrap">{formatearCOP(venta.total)}</span>
+                  <span className="whitespace-nowrap tabular-nums">{formatearCOP(venta.total)}</span>
                 </div>
               ))}
             </CardContent>
@@ -134,7 +146,12 @@ export default async function PaginaPanel() {
           <Bell className="size-4" aria-hidden /> Alertas
         </h2>
         {agotados.length === 0 && proximosVencer === 0 ? (
-          <p className="text-muted-foreground text-sm">Sin alertas: el stock y los vencimientos están al día.</p>
+          <Empty>
+            <EmptyHeader>
+              <EmptyTitle>Sin alertas</EmptyTitle>
+              <EmptyDescription>El stock y los vencimientos están al día.</EmptyDescription>
+            </EmptyHeader>
+          </Empty>
         ) : (
           <Card>
             <CardContent className="flex flex-col gap-1 p-3 text-sm">

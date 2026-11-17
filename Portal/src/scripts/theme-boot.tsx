@@ -67,6 +67,20 @@ export function ThemeBootScript() {
         root.classList.toggle("dark", resolvedMode === "dark");
         root.style.colorScheme = resolvedMode;
 
+        var bg = getComputedStyle(root).getPropertyValue("--background").trim();
+        if (bg) {
+          var colorMetas = document.head.querySelectorAll('meta[name="theme-color"]');
+          if (colorMetas.length === 0) {
+            var meta = document.createElement("meta");
+            meta.setAttribute("name", "theme-color");
+            document.head.appendChild(meta);
+            colorMetas = [meta];
+          }
+          colorMetas.forEach(function (m) {
+            m.setAttribute("content", bg);
+          });
+        }
+
       } catch (e) {
         console.warn("ThemeBootScript error:", e);
       }

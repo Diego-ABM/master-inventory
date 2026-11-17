@@ -33,7 +33,7 @@ export const fotoRepo = {
     const db = await abrirDb();
     const [fila] = await db`SELECT datos, mime FROM fotos_producto WHERE ruta_archivo = ${ruta}`;
     if (!fila?.datos) return null;
-    return { datos: fila.datos as Uint8Array, mime: (fila.mime as string) ?? null };
+    return { datos: fila.datos as Uint8Array, mime: fila.mime as string | null };
   },
 
   async quitar(fotoId: number, sql?: Sql): Promise<void> {
