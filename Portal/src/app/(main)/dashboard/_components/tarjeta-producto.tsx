@@ -36,7 +36,7 @@ export function TarjetaProducto({ producto }: { producto: ProductoListado }) {
           </Link>
           <BotonFavorito productoId={producto.id} esFavorito={producto.es_favorito === 1} />
         </div>
-        <p className="text-base font-semibold">{formatearCOP(producto.precio_venta)}</p>
+        <p className="text-base font-semibold tabular-nums">{formatearCOP(producto.precio_venta)}</p>
         <div className="flex flex-wrap gap-1">
           <Badge variant="secondary">{ETIQUETAS_MASCOTA[producto.mascota]}</Badge>
           <Badge variant="outline">{ETIQUETAS_CATEGORIA[producto.categoria]}</Badge>

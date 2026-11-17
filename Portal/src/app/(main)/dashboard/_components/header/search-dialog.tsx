@@ -145,7 +145,12 @@ export function SearchDialog() {
       </Button>
       <CommandDialog open={open} onOpenChange={handleOpenChange}>
         <Command>
-          <CommandInput placeholder="Buscar secciones y más…" value={query} onValueChange={setQuery} />
+          <CommandInput
+            aria-label="Buscar"
+            placeholder="Buscar secciones y más…"
+            value={query}
+            onValueChange={setQuery}
+          />
           <CommandList>
             <CommandEmpty>Sin resultados.</CommandEmpty>
             {query ? renderGroups(searchItems) : renderGroups(recommendations)}

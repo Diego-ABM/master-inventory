@@ -14,7 +14,7 @@ export function BottomNav() {
   return (
     <nav
       aria-label="Secciones principales"
-      className="bg-background/95 fixed inset-x-0 bottom-0 z-50 border-t backdrop-blur-md lg:hidden"
+      className="bg-background/95 fixed inset-x-0 bottom-0 z-50 border-t pr-[env(safe-area-inset-right)] pb-[env(safe-area-inset-bottom)] pl-[env(safe-area-inset-left)] backdrop-blur-md lg:hidden"
     >
       <div className="mx-auto flex h-16 w-full max-w-screen-2xl items-stretch justify-between px-2">
         <div className="flex flex-1 items-stretch justify-around">

@@ -63,18 +63,18 @@ export function LayoutControls() {
 
   return (
     <Popover>
-      <PopoverTrigger render={<Button size="icon" />}>
-        <Settings />
+      <PopoverTrigger render={<Button size="icon" />} aria-label="Preferencias de visualización">
+        <Settings aria-hidden />
       </PopoverTrigger>
       <PopoverContent align="end">
         <div className="flex flex-col gap-5">
           <div className="space-y-1.5">
-            <h4 className="text-sm leading-none font-medium">Preferences</h4>
-            <p className="text-muted-foreground text-xs">Customize your dashboard layout preferences.</p>
+            <h4 className="text-sm leading-none font-medium">Preferencias</h4>
+            <p className="text-muted-foreground text-xs">Personaliza la visualización del panel.</p>
           </div>
           <div className="space-y-3 **:data-[slot=toggle-group]:w-full **:data-[slot=toggle-group-item]:flex-1 **:data-[slot=toggle-group-item]:text-xs">
             <div className="space-y-1">
-              <Label className="text-xs font-medium">Theme Preset</Label>
+              <Label className="text-xs font-medium">Preset de tema</Label>
               <Select
                 items={themePresetItems}
                 value={themePreset}
@@ -84,7 +84,7 @@ export function LayoutControls() {
                 }}
               >
                 <SelectTrigger size="sm" className="w-full text-xs">
-                  <SelectValue className="items-center" placeholder="Preset" />
+                  <SelectValue className="items-center" placeholder="Selecciona un preset…" />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectGroup>
@@ -108,7 +108,7 @@ export function LayoutControls() {
             </div>
 
             <div className="space-y-1">
-              <Label className="text-xs font-medium">Fonts</Label>
+              <Label className="text-xs font-medium">Fuente</Label>
               <Select
                 items={fontItems}
                 value={font}
@@ -118,7 +118,7 @@ export function LayoutControls() {
                 }}
               >
                 <SelectTrigger size="sm" className="w-full text-xs">
-                  <SelectValue placeholder="Select font" />
+                  <SelectValue placeholder="Selecciona una fuente…" />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectGroup>
@@ -133,7 +133,7 @@ export function LayoutControls() {
             </div>
 
             <div className="space-y-1">
-              <Label className="text-xs font-medium">Theme Mode</Label>
+              <Label className="text-xs font-medium">Modo de tema</Label>
               <ToggleGroup
                 size="sm"
                 spacing={0}
@@ -144,20 +144,14 @@ export function LayoutControls() {
                   setPreference("theme_mode", mode as ThemeMode);
                 }}
               >
-                <ToggleGroupItem value="light" aria-label="Toggle light">
-                  Light
-                </ToggleGroupItem>
-                <ToggleGroupItem value="dark" aria-label="Toggle dark">
-                  Dark
-                </ToggleGroupItem>
-                <ToggleGroupItem value="system" aria-label="Toggle system">
-                  System
-                </ToggleGroupItem>
+                <ToggleGroupItem value="light">Claro</ToggleGroupItem>
+                <ToggleGroupItem value="dark">Oscuro</ToggleGroupItem>
+                <ToggleGroupItem value="system">Sistema</ToggleGroupItem>
               </ToggleGroup>
             </div>
 
             <div className="space-y-1">
-              <Label className="text-xs font-medium">Page Layout</Label>
+              <Label className="text-xs font-medium">Disposición de página</Label>
               <ToggleGroup
                 size="sm"
                 spacing={0}
@@ -168,17 +162,13 @@ export function LayoutControls() {
                   setPreference("content_layout", layout as ContentLayout);
                 }}
               >
-                <ToggleGroupItem value="centered" aria-label="Toggle centered">
-                  Centered
-                </ToggleGroupItem>
-                <ToggleGroupItem value="full-width" aria-label="Toggle full-width">
-                  Full Width
-                </ToggleGroupItem>
+                <ToggleGroupItem value="centered">Centrado</ToggleGroupItem>
+                <ToggleGroupItem value="full-width">Ancho completo</ToggleGroupItem>
               </ToggleGroup>
             </div>
 
             <div className="space-y-1">
-              <Label className="text-xs font-medium">Navbar Behavior</Label>
+              <Label className="text-xs font-medium">Comportamiento del encabezado</Label>
               <ToggleGroup
                 size="sm"
                 spacing={0}
@@ -189,17 +179,13 @@ export function LayoutControls() {
                   setPreference("navbar_style", style as NavbarStyle);
                 }}
               >
-                <ToggleGroupItem value="sticky" aria-label="Toggle sticky">
-                  Sticky
-                </ToggleGroupItem>
-                <ToggleGroupItem value="scroll" aria-label="Toggle scroll">
-                  Scroll
-                </ToggleGroupItem>
+                <ToggleGroupItem value="sticky">Fijo</ToggleGroupItem>
+                <ToggleGroupItem value="scroll">Con desplazamiento</ToggleGroupItem>
               </ToggleGroup>
             </div>
 
             <div className="space-y-1">
-              <Label className="text-xs font-medium">Sidebar Style</Label>
+              <Label className="text-xs font-medium">Estilo de barra lateral</Label>
               <ToggleGroup
                 size="sm"
                 spacing={0}
@@ -210,20 +196,14 @@ export function LayoutControls() {
                   setPreference("sidebar_variant", nextVariant as SidebarVariant);
                 }}
               >
-                <ToggleGroupItem value="inset" aria-label="Toggle inset">
-                  Inset
-                </ToggleGroupItem>
-                <ToggleGroupItem value="sidebar" aria-label="Toggle sidebar">
-                  Sidebar
-                </ToggleGroupItem>
-                <ToggleGroupItem value="floating" aria-label="Toggle floating">
-                  Floating
-                </ToggleGroupItem>
+                <ToggleGroupItem value="inset">Integrada</ToggleGroupItem>
+                <ToggleGroupItem value="sidebar">Lateral</ToggleGroupItem>
+                <ToggleGroupItem value="floating">Flotante</ToggleGroupItem>
               </ToggleGroup>
             </div>
 
             <div className="space-y-1">
-              <Label className="text-xs font-medium">Sidebar Collapse Mode</Label>
+              <Label className="text-xs font-medium">Colapso de barra lateral</Label>
               <ToggleGroup
                 size="sm"
                 spacing={0}
@@ -234,17 +214,13 @@ export function LayoutControls() {
                   setPreference("sidebar_collapsible", nextCollapsible as SidebarCollapsible);
                 }}
               >
-                <ToggleGroupItem value="icon" aria-label="Toggle icon">
-                  Icon
-                </ToggleGroupItem>
-                <ToggleGroupItem value="offcanvas" aria-label="Toggle offcanvas">
-                  OffCanvas
-                </ToggleGroupItem>
+                <ToggleGroupItem value="icon">Ícono</ToggleGroupItem>
+                <ToggleGroupItem value="offcanvas">Oculta</ToggleGroupItem>
               </ToggleGroup>
             </div>
 
             <Button type="button" size="sm" variant="outline" className="w-full text-xs" onClick={resetPreferences}>
-              Restore Defaults
+              Restaurar valores por defecto
             </Button>
           </div>
         </div>

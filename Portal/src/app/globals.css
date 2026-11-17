@@ -236,6 +236,7 @@ These serve as the fallback; there is no separate default.css file. */
 html {
   overscroll-behavior-x: auto;
   overscroll-behavior-y: none;
+  touch-action: manipulation;
 }
 
 .disable-transitions * {

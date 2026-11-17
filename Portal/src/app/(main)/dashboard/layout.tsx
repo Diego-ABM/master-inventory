@@ -15,6 +15,12 @@ import { NavHeader } from "./_components/nav-header";
 export default function Layout({ children }: Readonly<{ children: ReactNode }>) {
   return (
     <div className="flex min-h-screen flex-col">
+      <a
+        href="#contenido"
+        className="bg-background text-foreground ring-ring/50 sr-only rounded-md px-4 py-2 text-sm shadow-md outline-none focus:not-sr-only focus:mx-4 focus:mt-2 focus:w-fit focus:ring-2"
+      >
+        Saltar al contenido principal
+      </a>
       <header
         className={cn(
           "flex h-12 shrink-0 items-center border-b",
@@ -34,7 +40,11 @@ export default function Layout({ children }: Readonly<{ children: ReactNode }>) 
           </div>
         </div>
       </header>
-      <main className="min-h-0 min-w-0 flex-1 overflow-x-hidden pb-20 lg:pb-6">
+      <main
+        id="contenido"
+        tabIndex={-1}
+        className="min-h-0 min-w-0 flex-1 overflow-x-hidden pb-[calc(5rem+env(safe-area-inset-bottom))] lg:pb-[calc(1.5rem+env(safe-area-inset-bottom))]"
+      >
         <div className="mx-auto w-full max-w-screen-2xl p-4 md:p-6">{children}</div>
       </main>
       <BottomNav />

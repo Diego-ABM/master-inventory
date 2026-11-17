@@ -35,7 +35,7 @@ export default async function PaginaInventario({
     <div className="flex flex-col gap-4">
       <div className="flex items-center justify-between gap-2">
         <h1 className="text-xl font-semibold">Inventario</h1>
-        <Button render={<Link href="/dashboard/inventario/nuevo" />}>
+        <Button render={<Link href="/dashboard/inventario/nuevo" />} nativeButton={false}>
           <Plus className="size-4" /> Nuevo producto
         </Button>
       </div>

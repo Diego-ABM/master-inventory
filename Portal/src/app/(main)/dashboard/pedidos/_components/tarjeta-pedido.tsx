@@ -114,8 +114,11 @@ export function TarjetaPedido({ pedido }: { pedido: PedidoConItems }) {
           </div>
           {!entregado && (
             <AlertDialog open={confirmando} onOpenChange={setConfirmando}>
-              <AlertDialogTrigger render={<Button variant="ghost" size="icon" className="size-8" />}>
-                <Trash2 className="size-4" />
+              <AlertDialogTrigger
+                render={<Button variant="ghost" size="icon" className="size-8" />}
+                aria-label={`Eliminar pedido de ${pedido.nombre_cliente}`}
+              >
+                <Trash2 className="size-4" aria-hidden />
               </AlertDialogTrigger>
               <AlertDialogContent>
                 <AlertDialogHeader>
