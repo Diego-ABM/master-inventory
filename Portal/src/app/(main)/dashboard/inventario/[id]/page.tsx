@@ -46,9 +46,9 @@ export default async function PaginaDetalleProducto({ params }: { params: Promis
 
   return (
     <div className="flex flex-col gap-4">
-      <div className="flex items-start justify-between gap-2">
-        <div className="flex items-center gap-2">
-          <h1 className="text-xl font-semibold">{producto.nombre}</h1>
+      <div className="flex flex-wrap items-start justify-between gap-2">
+        <div className="flex min-w-0 items-center gap-2">
+          <h1 className="min-w-0 text-xl font-semibold break-words">{producto.nombre}</h1>
           <BotonFavorito productoId={producto.id} esFavorito={producto.es_favorito === 1} />
         </div>
         <div className="flex gap-2">

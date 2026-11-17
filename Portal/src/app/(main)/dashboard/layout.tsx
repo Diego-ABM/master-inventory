@@ -4,10 +4,13 @@ import { cn } from "cn";
 
 import { APP_CONFIG } from "@/config/app-config";
 
+import { BotonSalir } from "./_components/boton-salir";
 import { BottomNav } from "./_components/bottom-nav/bottom-nav";
+import { FabPedido } from "./_components/fab-pedido";
 import { LayoutControls } from "./_components/header/layout-controls";
 import { SearchDialog } from "./_components/header/search-dialog";
 import { ThemeSwitcher } from "./_components/header/theme-switcher";
+import { NavHeader } from "./_components/nav-header";
 
 export default function Layout({ children }: Readonly<{ children: ReactNode }>) {
   return (
@@ -19,20 +22,23 @@ export default function Layout({ children }: Readonly<{ children: ReactNode }>) 
         )}
       >
         <div className="mx-auto flex w-full max-w-screen-2xl items-center justify-between px-4 lg:px-6">
-          <div className="flex items-center gap-2">
-            <span className="text-sm font-semibold">{APP_CONFIG.name}</span>
+          <div className="flex min-w-0 items-center gap-2">
+            <span className="shrink-0 text-sm font-semibold">{APP_CONFIG.name}</span>
             <SearchDialog />
+            <NavHeader />
           </div>
           <div className="flex items-center gap-2">
             <LayoutControls />
             <ThemeSwitcher />
+            <BotonSalir />
           </div>
         </div>
       </header>
-      <main className="min-h-0 min-w-0 flex-1 overflow-x-hidden pb-20">
+      <main className="min-h-0 min-w-0 flex-1 overflow-x-hidden pb-20 lg:pb-6">
         <div className="mx-auto w-full max-w-screen-2xl p-4 md:p-6">{children}</div>
       </main>
       <BottomNav />
+      <FabPedido />
     </div>
   );
 }

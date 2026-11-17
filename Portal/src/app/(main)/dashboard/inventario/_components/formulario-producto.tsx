@@ -23,6 +23,7 @@ import {
   MASCOTAS,
   type ProductoConFotos,
 } from "@/lib/domain/tipos";
+import { comprimirFoto } from "@/lib/imagen";
 import { actualizarProducto, agregarFoto, crearProducto } from "@/server/services/productos";
 
 const esquema = z.object({
@@ -224,7 +225,22 @@ export function FormularioProducto({ producto }: { producto?: ProductoConFotos }
                 type="file"
                 accept="image/png,image/jpeg,image/webp"
                 multiple
-                onChange={(e) => setFotos(Array.from(e.target.files ?? []).slice(0, 5))}
+                onChange={async (e) => {
+                  const seleccionados = Array.from(e.target.files ?? []).slice(0, 5);
+                  e.target.value = "";
+                  const listos: File[] = [];
+                  for (const archivo of seleccionados) {
+                    try {
+                      listos.push(await comprimirFoto(archivo));
+                    } catch (error) {
+                      toast.add({
+                        title: error instanceof Error ? error.message : "No se pudo leer la imagen.",
+                        type: "error",
+                      });
+                    }
+                  }
+                  setFotos(listos);
+                }}
               />
               {fotos.length > 0 && (
                 <p className="text-muted-foreground text-xs">{fotos.length} foto(s) seleccionada(s).</p>
