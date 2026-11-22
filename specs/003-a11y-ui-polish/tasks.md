@@ -12,11 +12,11 @@
 
 - **[P]**: Puede ejecutarse en paralelo (archivos distintos, sin dependencias de tareas incompletas)
 - **[Story]**: User story a la que pertenece (US1, US2, US3)
-- Todos los paths son relativos a `Portal/` salvo indicación contraria
+- Todos los paths son relativos a `portal/` salvo indicación contraria
 
 ## Path Conventions
 
-- App Next.js en `Portal/` (single project)
+- App Next.js en `portal/` (single project)
 - Componentes co-ubicados: `src/app/(main)/dashboard/<screen>/_components/`
 - Puntos transversales: `src/app/layout.tsx`, `src/app/globals.css`, `src/scripts/theme-boot.tsx`, `src/stores/preferences/`
 
@@ -26,8 +26,8 @@
 
 **Purpose**: Confirmar línea base limpia antes de tocar UI
 
-- [X] T001 Ejecutar `pnpm check` en `Portal/` y confirmar lint/format limpio como línea base
-- [X] T002 [P] Revisar `Portal/package.json` y confirmar que la feature no requiere dependencias nuevas (regla del repo: no agregar dependencias)
+- [X] T001 Ejecutar `pnpm check` en `portal/` y confirmar lint/format limpio como línea base
+- [X] T002 [P] Revisar `portal/package.json` y confirmar que la feature no requiere dependencias nuevas (regla del repo: no agregar dependencias)
 
 ---
 
@@ -37,8 +37,8 @@
 
 **⚠️ CRITICAL**: Sin `viewportFit: "cover"`, `env(safe-area-inset-*)` vale siempre 0 (US2 bloqueada). El meta `theme-color` estático es la primera capa de FR-012 (US3).
 
-- [X] T003 Agregar `export const viewport: Viewport` en `Portal/src/app/layout.tsx` con `viewportFit: "cover"` y `themeColor` como array con `media: "(prefers-color-scheme: light)"` / `"(prefers-color-scheme: dark)"` apuntando al fondo claro y oscuro (capa estática de FR-012 para el primer pintado, antes del boot script)
-- [X] T004 [P] Agregar `touch-action: manipulation` sobre `html`/`body` en `Portal/src/app/globals.css` (elimina el retardo de doble-toque sin deshabilitar el zoom — NO usar `userScalable: false`)
+- [X] T003 Agregar `export const viewport: Viewport` en `portal/src/app/layout.tsx` con `viewportFit: "cover"` y `themeColor` como array con `media: "(prefers-color-scheme: light)"` / `"(prefers-color-scheme: dark)"` apuntando al fondo claro y oscuro (capa estática de FR-012 para el primer pintado, antes del boot script)
+- [X] T004 [P] Agregar `touch-action: manipulation` sobre `html`/`body` en `portal/src/app/globals.css` (elimina el retardo de doble-toque sin deshabilitar el zoom — NO usar `userScalable: false`)
 
 **Checkpoint**: `env(safe-area-inset-*)` ya reporta valores reales; la respuesta táctil ya es inmediata en toda la app.
 
@@ -52,15 +52,15 @@
 
 ### Implementation for User Story 1
 
-- [X] T005 [P] [US1] Agregar `aria-label="Preferencias de visualización"` al trigger del `Popover` (icono `Settings`) en `Portal/src/app/(main)/dashboard/_components/header/layout-controls.tsx`
-- [X] T006 [P] [US1] Traducir a español el `aria-label` existente (en inglés) del botón de tema en `Portal/src/app/(main)/dashboard/_components/header/theme-switcher.tsx`
-- [X] T007 [P] [US1] Agregar `aria-label="Eliminar venta"` al botón `Trash2` en `Portal/src/app/(main)/dashboard/ventas/_components/boton-eliminar-venta.tsx`
-- [X] T008 [P] [US1] Agregar `aria-label="Eliminar pedido"` al botón `Trash2` en `Portal/src/app/(main)/dashboard/pedidos/_components/tarjeta-pedido.tsx`
-- [X] T009 [P] [US1] Agregar `aria-label="Buscar"` al `CommandInput` (hoy solo tiene placeholder) en `Portal/src/app/(main)/dashboard/_components/header/search-dialog.tsx`
-- [X] T010 [US1] Agregar `aria-label="Quitar ítem"` (con nombre del producto si es trivial) al botón `X` de cada ítem agregado en `Portal/src/app/(main)/dashboard/pedidos/nuevo/_components/formulario-pedido.tsx`
-- [X] T011 [US1] Asociar las etiquetas a sus controles en `Portal/src/app/(main)/dashboard/pedidos/nuevo/_components/formulario-pedido.tsx`: `htmlFor`/`id` en inputs nativos y `aria-labelledby` en los `Select` de Base UI (que renderizan botón y no aceptan `htmlFor`), cubriendo "Producto del catálogo", "Cantidad" (×2), "Ítem personalizado" y "Precio" — mismo patrón ya usado con `htmlFor="cliente"` en el archivo
-- [X] T012 [P] [US1] Asociar las etiquetas "Mascota" y "Categoría" a sus `Select` vía `aria-labelledby` en `Portal/src/app/(main)/dashboard/inventario/_components/formulario-producto.tsx`
-- [X] T013 [P] [US1] Agregar enlace `<a href="#contenido">Saltar al contenido principal</a>` como primer elemento del shell con clase "oculto hasta foco" (`sr-only` + `focus:not-sr-only` + posición fija visible al enfocar), y `id="contenido"` + `tabIndex={-1}` en el `<main>` de `Portal/src/app/(main)/dashboard/layout.tsx`
+- [X] T005 [P] [US1] Agregar `aria-label="Preferencias de visualización"` al trigger del `Popover` (icono `Settings`) en `portal/src/app/(main)/dashboard/_components/header/layout-controls.tsx`
+- [X] T006 [P] [US1] Traducir a español el `aria-label` existente (en inglés) del botón de tema en `portal/src/app/(main)/dashboard/_components/header/theme-switcher.tsx`
+- [X] T007 [P] [US1] Agregar `aria-label="Eliminar venta"` al botón `Trash2` en `portal/src/app/(main)/dashboard/ventas/_components/boton-eliminar-venta.tsx`
+- [X] T008 [P] [US1] Agregar `aria-label="Eliminar pedido"` al botón `Trash2` en `portal/src/app/(main)/dashboard/pedidos/_components/tarjeta-pedido.tsx`
+- [X] T009 [P] [US1] Agregar `aria-label="Buscar"` al `CommandInput` (hoy solo tiene placeholder) en `portal/src/app/(main)/dashboard/_components/header/search-dialog.tsx`
+- [X] T010 [US1] Agregar `aria-label="Quitar ítem"` (con nombre del producto si es trivial) al botón `X` de cada ítem agregado en `portal/src/app/(main)/dashboard/pedidos/nuevo/_components/formulario-pedido.tsx`
+- [X] T011 [US1] Asociar las etiquetas a sus controles en `portal/src/app/(main)/dashboard/pedidos/nuevo/_components/formulario-pedido.tsx`: `htmlFor`/`id` en inputs nativos y `aria-labelledby` en los `Select` de Base UI (que renderizan botón y no aceptan `htmlFor`), cubriendo "Producto del catálogo", "Cantidad" (×2), "Ítem personalizado" y "Precio" — mismo patrón ya usado con `htmlFor="cliente"` en el archivo
+- [X] T012 [P] [US1] Asociar las etiquetas "Mascota" y "Categoría" a sus `Select` vía `aria-labelledby` en `portal/src/app/(main)/dashboard/inventario/_components/formulario-producto.tsx`
+- [X] T013 [P] [US1] Agregar enlace `<a href="#contenido">Saltar al contenido principal</a>` como primer elemento del shell con clase "oculto hasta foco" (`sr-only` + `focus:not-sr-only` + posición fija visible al enfocar), y `id="contenido"` + `tabIndex={-1}` en el `<main>` de `portal/src/app/(main)/dashboard/layout.tsx`
 - [X] T014 [US1] Auditar todos los botones `size="icon"` restantes y agregar `aria-label` en español donde falte (verificar `aria-hidden` en el ícono lucide para no duplicar anuncio): `boton-favorito`, `nav-header.tsx`, `inventario/[id]/_components/controles-stock.tsx`, `inventario/[id]/_components/marcado-proveedor.tsx`, `pedidos/_components/lista-proveedor.tsx`, `reportes/_components/controles-reporte.tsx`, `inventario/_components/filtros-inventario.tsx` — SC-001 exige 100%
 - [X] T015 [US1] Verificación manual del Escenario 1 de `quickstart.md`: Tab inicial → skip link; árbol a11y sin "botón" genérico; cada etiqueta visible activa su control al pulsarla
 
@@ -76,9 +76,9 @@
 
 ### Implementation for User Story 2
 
-- [X] T016 [US2] Agregar padding de área segura en `Portal/src/app/(main)/dashboard/_components/bottom-nav/bottom-nav.tsx`: `pb-[env(safe-area-inset-bottom)]` en el `<nav>` y `pl-[env(safe-area-inset-left)]` / `pr-[env(safe-area-inset-right)]` para horizontal
-- [X] T017 [P] [US2] Reemplazar `bottom-20` por `bottom-[calc(5rem+env(safe-area-inset-bottom))]` (y la variante `lg` correspondiente) en `Portal/src/app/(main)/dashboard/_components/fab-pedido.tsx`
-- [X] T018 [US2] Ajustar el `pb-20` del `<main>` en `Portal/src/app/(main)/dashboard/layout.tsx` para incluir el inset inferior (p. ej. `pb-[calc(5rem+env(safe-area-inset-bottom))]`) y que el contenido no quede tapado al hacer scroll hasta el final
+- [X] T016 [US2] Agregar padding de área segura en `portal/src/app/(main)/dashboard/_components/bottom-nav/bottom-nav.tsx`: `pb-[env(safe-area-inset-bottom)]` en el `<nav>` y `pl-[env(safe-area-inset-left)]` / `pr-[env(safe-area-inset-right)]` para horizontal
+- [X] T017 [P] [US2] Reemplazar `bottom-20` por `bottom-[calc(5rem+env(safe-area-inset-bottom))]` (y la variante `lg` correspondiente) en `portal/src/app/(main)/dashboard/_components/fab-pedido.tsx`
+- [X] T018 [US2] Ajustar el `pb-20` del `<main>` en `portal/src/app/(main)/dashboard/layout.tsx` para incluir el inset inferior (p. ej. `pb-[calc(5rem+env(safe-area-inset-bottom))]`) y que el contenido no quede tapado al hacer scroll hasta el final
 - [X] T019 [US2] Verificación manual del Escenario 2 de `quickstart.md`: controles visibles en vertical y horizontal con notch emulado, toque único sin retardo, zoom por pellizco funcional
 
 **Checkpoint**: User Stories 1 y 2 funcionan independientemente — 0 controles tapados por áreas inseguras (SC-002).
@@ -93,16 +93,16 @@
 
 ### Implementation for User Story 3
 
-- [X] T020 [P] [US3] Traducir todas las cadenas visibles y `aria-label`s restantes en `Portal/src/app/(main)/dashboard/_components/header/layout-controls.tsx`: "Preferences", "Customize…", "Theme Preset", placeholder "Preset" → "Selecciona un preset…", "Select font" → "Selecciona una fuente…", y cualquier otra etiqueta del panel (FR-006, SC-004)
-- [X] T021 [P] [US3] Agregar clase `tabular-nums` a los precios de la rejilla en `Portal/src/app/(main)/dashboard/_components/tarjeta-producto.tsx`
-- [X] T022 [US3] Agregar clase `tabular-nums` a las cifras de las filas del pedido (precio/cantidad/subtotal por ítem) en `Portal/src/app/(main)/dashboard/pedidos/nuevo/_components/formulario-pedido.tsx`
-- [X] T023 [P] [US3] Auditar todos los `placeholder=` bajo `Portal/src/app/` y aplicar la convención FR-008: los que sugieren/ejemplifican terminan en "…" (p. ej. "Selecciona un producto" → "Selecciona un producto…"); los de nota de estado ("Opcional") o ejemplo numérico literal ("20000", "0") NO llevan "…"
-- [X] T024 [P] [US3] Auditar todos los puntos de render de imágenes de producto bajo `Portal/src/app/` (detalle de producto, favoritos, cualquier `<img>` fuera de `tarjeta-producto.tsx` y `galeria-fotos.tsx` que ya usan `aspect-square` + `bg-muted`) y envolver en contenedor de proporción fija donde falte — NO migrar a `next/image`
-- [X] T025 [US3] Reemplazar los estados vacíos sueltos ("Aún no hay ventas registradas hoy.", "Sin alertas: …") por el componente `Empty`/`EmptyHeader`/`EmptyTitle`/`EmptyDescription` de `@/components/ui/empty`, y agregar `tabular-nums` a las cifras comparables del panel, en `Portal/src/app/(main)/dashboard/page.tsx`
-- [X] T026 [P] [US3] Agregar `useEffect` con listener `beforeunload` (con `e.preventDefault()`) en `Portal/src/app/(main)/dashboard/inventario/_components/formulario-producto.tsx`, activo solo cuando `formState.isDirty` de RHF es true — tras `reset()`/guardado exitoso queda limpio y no advierte
-- [X] T027 [US3] Agregar `useEffect` con listener `beforeunload` en `Portal/src/app/(main)/dashboard/pedidos/nuevo/_components/formulario-pedido.tsx`, activo solo cuando `cliente !== "" || contacto !== "" || items.length > 0`; limpiar el estado antes de `router.push` tras `crearPedido` exitoso para que no advierta al salir
-- [X] T028 [P] [US3] En `Portal/src/scripts/theme-boot.tsx`, tras resolver el modo inicial, escribir el `<meta name="theme-color">` con el fondo resuelto leído de `getComputedStyle(document.documentElement).getPropertyValue("--background")`
-- [X] T029 [P] [US3] En `Portal/src/stores/preferences/preferences-provider.tsx`, suscribirse a cambios de `theme_mode` y `theme_preset` (donde ya se suscriben a `theme_mode`) y actualizar el `<meta name="theme-color">` con el `--background` computado — cubre override manual, modo sistema y cambio de preset sin recargar
+- [X] T020 [P] [US3] Traducir todas las cadenas visibles y `aria-label`s restantes en `portal/src/app/(main)/dashboard/_components/header/layout-controls.tsx`: "Preferences", "Customize…", "Theme Preset", placeholder "Preset" → "Selecciona un preset…", "Select font" → "Selecciona una fuente…", y cualquier otra etiqueta del panel (FR-006, SC-004)
+- [X] T021 [P] [US3] Agregar clase `tabular-nums` a los precios de la rejilla en `portal/src/app/(main)/dashboard/_components/tarjeta-producto.tsx`
+- [X] T022 [US3] Agregar clase `tabular-nums` a las cifras de las filas del pedido (precio/cantidad/subtotal por ítem) en `portal/src/app/(main)/dashboard/pedidos/nuevo/_components/formulario-pedido.tsx`
+- [X] T023 [P] [US3] Auditar todos los `placeholder=` bajo `portal/src/app/` y aplicar la convención FR-008: los que sugieren/ejemplifican terminan en "…" (p. ej. "Selecciona un producto" → "Selecciona un producto…"); los de nota de estado ("Opcional") o ejemplo numérico literal ("20000", "0") NO llevan "…"
+- [X] T024 [P] [US3] Auditar todos los puntos de render de imágenes de producto bajo `portal/src/app/` (detalle de producto, favoritos, cualquier `<img>` fuera de `tarjeta-producto.tsx` y `galeria-fotos.tsx` que ya usan `aspect-square` + `bg-muted`) y envolver en contenedor de proporción fija donde falte — NO migrar a `next/image`
+- [X] T025 [US3] Reemplazar los estados vacíos sueltos ("Aún no hay ventas registradas hoy.", "Sin alertas: …") por el componente `Empty`/`EmptyHeader`/`EmptyTitle`/`EmptyDescription` de `@/components/ui/empty`, y agregar `tabular-nums` a las cifras comparables del panel, en `portal/src/app/(main)/dashboard/page.tsx`
+- [X] T026 [P] [US3] Agregar `useEffect` con listener `beforeunload` (con `e.preventDefault()`) en `portal/src/app/(main)/dashboard/inventario/_components/formulario-producto.tsx`, activo solo cuando `formState.isDirty` de RHF es true — tras `reset()`/guardado exitoso queda limpio y no advierte
+- [X] T027 [US3] Agregar `useEffect` con listener `beforeunload` en `portal/src/app/(main)/dashboard/pedidos/nuevo/_components/formulario-pedido.tsx`, activo solo cuando `cliente !== "" || contacto !== "" || items.length > 0`; limpiar el estado antes de `router.push` tras `crearPedido` exitoso para que no advierta al salir
+- [X] T028 [P] [US3] En `portal/src/scripts/theme-boot.tsx`, tras resolver el modo inicial, escribir el `<meta name="theme-color">` con el fondo resuelto leído de `getComputedStyle(document.documentElement).getPropertyValue("--background")`
+- [X] T029 [P] [US3] En `portal/src/stores/preferences/preferences-provider.tsx`, suscribirse a cambios de `theme_mode` y `theme_preset` (donde ya se suscriben a `theme_mode`) y actualizar el `<meta name="theme-color">` con el `--background` computado — cubre override manual, modo sistema y cambio de preset sin recargar
 - [X] T030 [US3] Verificación manual de los Escenarios 3–5 de `quickstart.md`: panel en español, cifras alineadas, placeholders con "…", sin desplazamiento al cargar imágenes, estados vacíos uniformes, aviso nativo en los 3 formularios cubiertos (y ausente en venta/acceso/intacto/tras guardar/navegación interna), meta `theme-color` actualizado al cambiar modo y preset
 
 **Checkpoint**: Las tres user stories funcionan — acabado consistente y protección de cambios (SC-004, SC-005, SC-006, FR-012).
@@ -113,8 +113,8 @@
 
 **Purpose**: Verificación final transversal
 
-- [X] T031 Ejecutar `pnpm check` en `Portal/` y corregir cualquier hallazgo de lint/format introducido
-- [X] T032 Ejecutar `pnpm build` en `Portal/` y confirmar build exitoso sin warnings nuevos
+- [X] T031 Ejecutar `pnpm check` en `portal/` y corregir cualquier hallazgo de lint/format introducido
+- [X] T032 Ejecutar `pnpm build` en `portal/` y confirmar build exitoso sin warnings nuevos
 - [X] T033 Pasada completa de validación según `quickstart.md` (Escenarios 1–5) como aceptación final contra SC-001…SC-006
 
 ---
@@ -172,8 +172,8 @@ Task: "Skip link + id=contenido en dashboard/layout.tsx"
 # Acabado independiente por archivo:
 Task: "Traducir panel en header/layout-controls.tsx"
 Task: "tabular-nums en tarjeta-producto.tsx"
-Task: "Auditoría de placeholders en Portal/src/app/"
-Task: "Auditoría de contenedores de imagen en Portal/src/app/"
+Task: "Auditoría de placeholders en portal/src/app/"
+Task: "Auditoría de contenedores de imagen en portal/src/app/"
 Task: "beforeunload en formulario-producto.tsx"
 Task: "theme-color en theme-boot.tsx"
 Task: "theme-color en preferences-provider.tsx"

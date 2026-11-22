@@ -37,7 +37,7 @@ accesibilidad, emulación de safe-area en DevTools). No hay infra de tests de UI
 
 **Target Platform**: Web app (uso principal desde celular con notch; deploy en Vercel)
 
-**Project Type**: web-application (Next.js App Router, single project en `Portal/`)
+**Project Type**: web-application (Next.js App Router, single project en `portal/`)
 
 **Performance Goals**: Sin nuevas metas; se exige 0 desplazamiento de contenido al
 cargar imágenes (SC-005) y respuesta táctil sin retardo de doble-toque (FR-005).
@@ -47,7 +47,7 @@ pantallas existentes. Componentes de `src/components/ui/` y `src/components/cale
 no se modifican — la personalización se hace donde se usan.
 
 **Scale/Scope**: ~8 pantallas del dashboard + layout compartido; ~20 archivos tocados,
-todos bajo `Portal/src/app/` y `Portal/src/app/globals.css`.
+todos bajo `portal/src/app/` y `portal/src/app/globals.css`.
 
 ## Constitution Check
 
@@ -89,7 +89,7 @@ endpoints; todo es ajuste de UI interna.
 ### Source Code (repository root)
 
 ```text
-Portal/src/
+portal/src/
 ├── app/
 │   ├── layout.tsx                          # export const viewport (viewportFit + themeColor)
 │   ├── globals.css                         # touch-action, utilidades safe-area, tabular-nums
@@ -127,7 +127,7 @@ Portal/src/
 └── stores/preferences/                     # hook de actualización de theme-color al cambiar tema
 ```
 
-**Structure Decision**: Todo el trabajo vive en la app `Portal/` siguiendo la
+**Structure Decision**: Todo el trabajo vive en la app `portal/` siguiendo la
 co-ubicación existente (`<screen>/_components/`); los únicos puntos transversales son
 `app/layout.tsx` (viewport/themeColor), `globals.css` (utilidades) y el mecanismo de
 preferencias (`theme-boot` + `preferences-store`) para el theme-color dinámico. No se

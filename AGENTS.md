@@ -10,11 +10,13 @@ Desarrollo por specs (Spec Kit): cada feature vive en `specs/<NNN>-<nombre>/` co
 
 ## Estructura del repo
 
-- `Portal/` — la aplicación. Todo el trabajo ocurre aquí. Tiene su propio `AGENTS.md` con convenciones de UI (léalo antes de tocar pantallas).
-- `Started/` — plantilla original intacta, solo referencia. NO modificar.
+- `portal/` — la aplicación. Todo el trabajo ocurre aquí. Tiene su propio `AGENTS.md` con convenciones de UI (léalo antes de tocar pantallas).
+- `plantilla/` — espejo de la plantilla upstream (`arhamkhnz/next-shadcn-admin-dashboard-baseui`), solo referencia. Se sincroniza con `git fetch upstream` + espejo de `upstream/main`; NO modificar a mano.
 - `specs/` — especificaciones por feature.
 
-## Stack (Portal/)
+Remotes: `origin` = repo propio (develop/demo/produccion); `upstream` = plantilla original. La rama `fork` trackea `upstream/main` para revisar novedades y cherry-pickear.
+
+## Stack (portal/)
 
 - Next.js 16 (App Router) + React 19 + TypeScript estricto
 - Tailwind CSS v4 + shadcn/ui estilo `base-nova` (Base UI)
@@ -29,8 +31,8 @@ Desarrollo por specs (Spec Kit): cada feature vive en `specs/<NNN>-<nombre>/` co
 ## Datos
 
 - BD: Postgres (Supabase). Esquema y conexión en `src/server/db/index.ts`
-- Fotos: guardadas en la tabla `fotos_producto` (binario + mime), servidas por `GET /api/fotos/[name]`; imágenes del catálogo inicial en `Portal/public/seed/images/`
-- Seed inicial: `Portal/seed/productos_seed.json`
+- Fotos: guardadas en la tabla `fotos_producto` (binario + mime), servidas por `GET /api/fotos/[name]`; imágenes del catálogo inicial en `portal/public/seed/images/`
+- Seed inicial: `portal/seed/productos_seed.json`
 - Respaldo: un JSON único con fotos en base64 (`GET/POST /api/respaldo`); restauración = reemplazo total con confirmación
 - Reporte exportable: `.txt` (`GET /api/reportes/export`)
 
@@ -45,9 +47,9 @@ src/server/server-actions.ts  Server Actions llamadas desde la UI
 src/app/               UI. Rutas en (main)/dashboard/{inventario,favoritos,alertas,pedidos,ventas,reportes,respaldo}
 ```
 
-Co-ubicación por pantalla: `<screen>/_components/` y `<screen>/_data/`. Detalles en `Portal/AGENTS.md`.
+Co-ubicación por pantalla: `<screen>/_components/` y `<screen>/_data/`. Detalles en `portal/AGENTS.md`.
 
-## Comandos (en Portal/)
+## Comandos (en portal/)
 
 ```bash
 pnpm install && pnpm dev

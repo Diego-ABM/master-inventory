@@ -1,22 +1,22 @@
 # Research — Master Inventory
 
-Resolución de todas las incógnitas del Technical Context. Fuentes: plantilla `Portal/` (Studio Admin, Next.js 16), app de referencia MrKlaus (`/mnt/B/Proyectos/MrKlaus`, Kotlin/Room), entorno local (Node v26.13.1, pnpm 12.21.0) y spec `spec.md`.
+Resolución de todas las incógnitas del Technical Context. Fuentes: plantilla `portal/` (Studio Admin, Next.js 16), app de referencia MrKlaus (`/mnt/B/Proyectos/MrKlaus`, Kotlin/Room), entorno local (Node v26.13.1, pnpm 12.21.0) y spec `spec.md`.
 
 ## D1. ¿En qué directorio se construye la app?
 
-- **Decisión**: `Portal/`. `Started/` queda intacto como copia de referencia de la plantilla.
-- **Rationale**: el hook `.husky/pre-commit` hace `cd Portal` y ejecuta `generate:presets` + `lint-staged`: el proyecto activo es `Portal/`. Además `Portal/` ya difiere de `Started/` en tener código de auth (`src/proxy.ts`, `src/config/auth-config.ts`, `src/server/auth-actions.ts`), que habrá que retirar.
-- **Alternativas consideradas**: construir en `Started/` (variante sin auth, `proxy.disabled.ts`) — rechazada porque rompe el hook pre-commit existente y duplicaría el proyecto; crear una raíz nueva — rechazada por la condición constitucional "plantilla del proyecto".
+- **Decisión**: `portal/`. `plantilla/` queda intacto como copia de referencia de la plantilla.
+- **Rationale**: el hook `.husky/pre-commit` hace `cd portal` y ejecuta `generate:presets` + `lint-staged`: el proyecto activo es `portal/`. Además `portal/` ya difiere de `plantilla/` en tener código de auth (`src/proxy.ts`, `src/config/auth-config.ts`, `src/server/auth-actions.ts`), que habrá que retirar.
+- **Alternativas consideradas**: construir en `plantilla/` (variante sin auth, `proxy.disabled.ts`) — rechazada porque rompe el hook pre-commit existente y duplicaría el proyecto; crear una raíz nueva — rechazada por la condición constitucional "plantilla del proyecto".
 
 ## D2. Limpieza de la plantilla (auth y pantallas demo)
 
-- **Decisión**: eliminar de `Portal/`: `src/proxy.ts`, `src/config/auth-config.ts`, `src/server/auth-actions.ts`, `src/app/(main)/auth/**`, `src/data/users.ts` y las rutas demo no usadas (`chat`, `mail`, dashboards de ejemplo `(legacy)`, `default`, `crm`, `finance`, `analytics`, `productivity`, `ecommerce`, `academy`, `logistics`, `infrastructure`, `file-manager`, `patient-monitoring`, etc.). Se conserva el shell del dashboard, `src/components/ui/**`, `src/components/calendar` (sin tocar por AGENTS.md), `src/lib/**`, hooks, estilos y presets.
+- **Decisión**: eliminar de `portal/`: `src/proxy.ts`, `src/config/auth-config.ts`, `src/server/auth-actions.ts`, `src/app/(main)/auth/**`, `src/data/users.ts` y las rutas demo no usadas (`chat`, `mail`, dashboards de ejemplo `(legacy)`, `default`, `crm`, `finance`, `analytics`, `productivity`, `ecommerce`, `academy`, `logistics`, `infrastructure`, `file-manager`, `patient-monitoring`, etc.). Se conserva el shell del dashboard, `src/components/ui/**`, `src/components/calendar` (sin tocar por AGENTS.md), `src/lib/**`, hooks, estilos y presets.
 - **Rationale**: la spec dice explícitamente "sin login ni multiusuario" y el alcance cubre solo las funciones de MrKlaus. Dejar auth/pantallas demo sería alcance fantasma (principio III).
 - **Alternativas consideradas**: deshabilitar auth manteniendo el código — rechazado: código muerto contradice "cero alcance fantasma" y "simplicidad".
 
 ## D3. Mecanismo de persistencia
 
-- **Decisión**: `node:sqlite` (`DatabaseSync`) sobre un único archivo `Portal/data/master-inventory.db`. Esquema creado por SQL de bootstrap en `src/server/db/` con `PRAGMA journal_mode=WAL`, `foreign_keys=ON`. Todo acceso concentrado en repositorios (`src/server/repositories/`); los servicios y la UI nunca emiten SQL.
+- **Decisión**: `node:sqlite` (`DatabaseSync`) sobre un único archivo `portal/data/master-inventory.db`. Esquema creado por SQL de bootstrap en `src/server/db/` con `PRAGMA journal_mode=WAL`, `foreign_keys=ON`. Todo acceso concentrado en repositorios (`src/server/repositories/`); los servicios y la UI nunca emiten SQL.
 - **Rationale**: Node 26.13.1 trae `node:sqlite` sin flag — cero dependencias nuevas (constitución I + AGENTS.md). SQLite en archivo único hace trivial el respaldo (leer todas las tablas) y cumple "local, un solo usuario". `DatabaseSync` es síncrono: combina de forma natural con Server Components y Server Actions (sin async innecesario). Las transacciones (`BEGIN IMMEDIATE`/`COMMIT`) garantizan la atomicidad de "venta + descuento de stock" y "restauración total".
 - **Alternativas consideradas**:
   - `better-sqlite3` — dependencia nativa que compila con node-gyp; innecesaria existiendo `node:sqlite`.
@@ -27,15 +27,15 @@ Resolución de todas las incógnitas del Technical Context. Fuentes: plantilla `
 ## D4. Almacenamiento y servicio de fotos
 
 - **Decisión**: dos orígenes unificados bajo `fotos_producto.ruta_archivo` (string de ruta pública):
-  1. **Catálogo inicial**: `Portal/public/seed/images/*.png` — se sirven estáticamente como `/seed/images/<archivo>`; las filas seed apuntan a esa ruta. No requiere copia en runtime.
-  2. **Fotos del dueño**: `Portal/data/fotos/<nombre>` — servidas por route handler `GET /api/fotos/[name]` que hace streaming con `Content-Type` por extensión. Al subir: validar tipo (png/jpg/jpeg/webp), renombrar a `<fotoId>.<ext>` para evitar colisiones y path traversal.
+  1. **Catálogo inicial**: `portal/public/seed/images/*.png` — se sirven estáticamente como `/seed/images/<archivo>`; las filas seed apuntan a esa ruta. No requiere copia en runtime.
+  2. **Fotos del dueño**: `portal/data/fotos/<nombre>` — servidas por route handler `GET /api/fotos/[name]` que hace streaming con `Content-Type` por extensión. Al subir: validar tipo (png/jpg/jpeg/webp), renombrar a `<fotoId>.<ext>` para evitar colisiones y path traversal.
   3. El borrado de foto o de producto elimina el archivo en `data/fotos/` (las de `public/seed/` solo se "borran" como referencia; el PNG de seed es dato del repo).
 - **Rationale**: `public/seed/` permite no duplicar 22 MB en runtime; `data/fotos/` mantiene juntos los datos del dueño (db + fotos) para el respaldo y para gitignorear `data/`. Un route handler propio evita exponer `data/` como público.
 - **Alternativas consideradas**: todo bajo `public/` — expone datos del dueño como estáticos del build y mezcla runtime con repo; fotos como BLOB en SQLite — funciona, pero complica el render en `<img>` y el respaldo (igual hay que serializarlas); `next/image` con loader local — no aporta valor real con imágenes locales estáticas y añade fricción.
 
 ## D5. Catálogo inicial (FR-017)
 
-- **Decisión**: copiar `productos_seed.json` (76 ítems) a `Portal/seed/` y las 62 imágenes a `Portal/public/seed/images/` (datos del producto, van al repo). En el arranque del servidor, un init de `src/server/services/seed.ts` corre una sola vez: si `SELECT COUNT(*) FROM productos = 0` y `meta.semilla_cargada` no está marcada → inserta productos con sus fotos (`/seed/images/<archivo>`) en una transacción y marca `semilla_cargada`. Si la carga falla → se registra WARN en logs, no se reintenta sobre datos existentes y la app sigue usable (CL4). `precio_compra` ausente → 70 % del `precio` de venta (Assumptions).
+- **Decisión**: copiar `productos_seed.json` (76 ítems) a `portal/seed/` y las 62 imágenes a `portal/public/seed/images/` (datos del producto, van al repo). En el arranque del servidor, un init de `src/server/services/seed.ts` corre una sola vez: si `SELECT COUNT(*) FROM productos = 0` y `meta.semilla_cargada` no está marcada → inserta productos con sus fotos (`/seed/images/<archivo>`) en una transacción y marca `semilla_cargada`. Si la carga falla → se registra WARN en logs, no se reintenta sobre datos existentes y la app sigue usable (CL4). `precio_compra` ausente → 70 % del `precio` de venta (Assumptions).
 - **Rationale**: igual que MrKlaus (`SeedDataLoader` + `assets/seed`), pero en servidor: el flag en tabla `meta` evita cualquier recarga; la verificación "solo si está vacío" es atómica en una transacción.
 - **Alternativas consideradas**: seed al primer render de una página — no determinista y depende de qué pantalla abra el dueño; migración de framework — añade tooling sin necesidad (una sola carga inicial).
 
@@ -83,4 +83,4 @@ Resolución de todas las incógnitas del Technical Context. Fuentes: plantilla `
 
 ## Resultado
 
-No quedan **NEEDS CLARIFICATION**. Todas las decisiones usan dependencias ya presentes o módulos nativos de Node 26; el único artefacto externo a copiar es el seed de MrKlaus (`productos_seed.json` + `seed_images/` → `Portal/seed/` y `Portal/public/seed/images/`).
+No quedan **NEEDS CLARIFICATION**. Todas las decisiones usan dependencias ya presentes o módulos nativos de Node 26; el único artefacto externo a copiar es el seed de MrKlaus (`productos_seed.json` + `seed_images/` → `portal/seed/` y `portal/public/seed/images/`).

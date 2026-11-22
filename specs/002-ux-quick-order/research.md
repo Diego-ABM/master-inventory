@@ -2,7 +2,7 @@
 
 Fecha: 2026-11-16 · Feature: `002-ux-quick-order`
 
-Todas las decisiones se tomaron inspeccionando el código real en `Portal/` y la
+Todas las decisiones se tomaron inspeccionando el código real en `portal/` y la
 documentación local de Next 16 (`node_modules/next/dist/docs/`). No quedan
 "NEEDS CLARIFICATION": la spec ya resolvió modelo de acceso, duración de sesión,
 formatos de foto y estrategia responsive.

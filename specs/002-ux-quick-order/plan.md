@@ -27,7 +27,7 @@ Seis historias sobre la app existente (Next.js 16 + Postgres en Supabase):
 
 **Target Platform**: app web (Vercel en producción, `pnpm dev` en local).
 
-**Project Type**: web-application (proyecto único, `Portal/`).
+**Project Type**: web-application (proyecto único, `portal/`).
 
 **Performance Goals**: fotos subidas siempre < ~1 MB tras compresión en dispositivo; fotos servidas con `Cache-Control: public, max-age=31536000, immutable`.
 
@@ -76,7 +76,7 @@ specs/002-ux-quick-order/
 ### Source Code (repository root)
 
 ```text
-Portal/src/
+portal/src/
 ├── proxy.ts                             # NUEVO: gate de acceso (cookie de sesión)
 ├── lib/
 │   ├── imagen.ts                        # NUEVO: compresión de foto en dispositivo (Canvas)
@@ -107,7 +107,7 @@ Portal/src/
 └── next.config.mjs                      # experimental.serverActions.bodySizeLimit: "4mb"
 ```
 
-**Structure Decision**: co-ubicación por pantalla según `Portal/AGENTS.md`; lógica pura en `src/lib/`; ningún archivo fuera de `Portal/`.
+**Structure Decision**: co-ubicación por pantalla según `portal/AGENTS.md`; lógica pura en `src/lib/`; ningún archivo fuera de `portal/`.
 
 ## Complexity Tracking
 

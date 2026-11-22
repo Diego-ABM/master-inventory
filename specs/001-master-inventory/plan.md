@@ -8,15 +8,15 @@
 
 Sistema local de un solo usuario para una tienda de mascotas: inventario con fotos, ventas con precios congelados, pedidos de clientes, marcados para pedido al proveedor, alertas de vencimiento/agotados, favoritos, reportes financieros del periodo, respaldo/restauración total de datos y logs internos. Replica las funciones existentes de la app Android MrKlaus sobre la plantilla web del proyecto.
 
-Enfoque técnico: aplicación **Next.js 16 (App Router) + React 19 + TypeScript estricto** dentro de `Portal/` (la plantilla Studio Admin ya presente en el repo; `Started/` queda intacta como referencia). Persistencia local con **`node:sqlite` (DatabaseSync)** —módulo nativo de Node 26, cero dependencias nuevas— en un archivo `data/master-inventory.db`, más fotos en disco (`public/seed/` para el catálogo inicial y `data/fotos/` para las subidas por el dueño). Lógica de negocio pura en `src/lib/domain/` (sin I/O, probable con `node:test`), acceso a datos en `src/server/db/` (repositorios), orquestación en `src/server/services/` y Server Actions para las mutaciones desde la UI. Respaldo = un solo archivo JSON con las fotos embebidas en base64; reporte exportable = archivo de texto plano `.txt`. Todo en español de Colombia y COP.
+Enfoque técnico: aplicación **Next.js 16 (App Router) + React 19 + TypeScript estricto** dentro de `portal/` (la plantilla Studio Admin ya presente en el repo; `plantilla/` queda intacta como referencia). Persistencia local con **`node:sqlite` (DatabaseSync)** —módulo nativo de Node 26, cero dependencias nuevas— en un archivo `data/master-inventory.db`, más fotos en disco (`public/seed/` para el catálogo inicial y `data/fotos/` para las subidas por el dueño). Lógica de negocio pura en `src/lib/domain/` (sin I/O, probable con `node:test`), acceso a datos en `src/server/db/` (repositorios), orquestación en `src/server/services/` y Server Actions para las mutaciones desde la UI. Respaldo = un solo archivo JSON con las fotos embebidas en base64; reporte exportable = archivo de texto plano `.txt`. Todo en español de Colombia y COP.
 
 ## Technical Context
 
-**Language/Version**: TypeScript estricto (TS 6.x), Next.js 16, React 19 — los fijados por la plantilla `Portal/`
+**Language/Version**: TypeScript estricto (TS 6.x), Next.js 16, React 19 — los fijados por la plantilla `portal/`
 
-**Primary Dependencies**: Tailwind CSS v4, shadcn/ui estilo base-nova (Base UI), Zod, React Hook Form, Zustand, lucide-react, date-fns, recharts — todas ya en `Portal/package.json`. **No se agregan dependencias nuevas.**
+**Primary Dependencies**: Tailwind CSS v4, shadcn/ui estilo base-nova (Base UI), Zod, React Hook Form, Zustand, lucide-react, date-fns, recharts — todas ya en `portal/package.json`. **No se agregan dependencias nuevas.**
 
-**Storage**: `node:sqlite` (`DatabaseSync`, nativo en Node 26.13.1) → `Portal/data/master-inventory.db`. Fotos: `Portal/public/seed/images/` (catálogo inicial) y `Portal/data/fotos/` (subidas, servidas por route handler `/api/fotos/[name]`). Respaldo: archivo JSON único con fotos en base64.
+**Storage**: `node:sqlite` (`DatabaseSync`, nativo en Node 26.13.1) → `portal/data/master-inventory.db`. Fotos: `portal/public/seed/images/` (catálogo inicial) y `portal/data/fotos/` (subidas, servidas por route handler `/api/fotos/[name]`). Respaldo: archivo JSON único con fotos en base64.
 
 **Testing**: `node --test` (runner nativo de Node, type-stripping incluido) sobre `src/lib/domain/**/*.test.ts` para la lógica financiera y de stock (SC-004 exige tolerancia 0). Verificación de UI manual según `quickstart.md` (constitución, principio IV). La plantilla no trae framework de pruebas.
 
@@ -43,7 +43,7 @@ Enfoque técnico: aplicación **Next.js 16 (App Router) + React 19 + TypeScript 
 | **V. Datos del usuario con respeto** | Sin cuentas ni secretos; solo los datos de negocio de la spec. | PASS |
 | **Crecimiento sin romper** | Feature inicial sobre plantilla; la limpieza de auth/demo se declara aquí como cambio de comportamiento justificado por la spec (fuera de alcance: login). | PASS |
 | **Arquitectura desacoplada** | `src/lib/domain/` (reglas puras) / `src/server/db`+`repositories` (almacenamiento) / `src/server/services` (orquestación) / `src/app` (UI) / `report-format` (texto plano, sin PDF). Cambiar SQLite o el formato de reporte no toca dominio ni UI. | PASS |
-| **Plantilla del proyecto** | Se construye dentro de `Portal/` reusando shell, componentes `src/components/ui`, tokens de tema y convenciones de co-ubicación de AGENTS.md. `Started/` no se toca. La barra inferior de 5 secciones (FR-018) es requisito de spec y se implementa con tokens/componentes de la plantilla. | PASS |
+| **Plantilla del proyecto** | Se construye dentro de `portal/` reusando shell, componentes `src/components/ui`, tokens de tema y convenciones de co-ubicación de AGENTS.md. `plantilla/` no se toca. La barra inferior de 5 secciones (FR-018) es requisito de spec y se implementa con tokens/componentes de la plantilla. | PASS |
 
 **Gate inicial: PASS — sin violaciones que justificar.**
 
@@ -69,7 +69,7 @@ specs/001-master-inventory/
 ### Source Code (repository root)
 
 ```text
-Portal/                                  # App sobre la plantilla (package manager: pnpm)
+portal/                                  # App sobre la plantilla (package manager: pnpm)
 ├── public/
 │   └── seed/images/                     # 62 PNG del catálogo inicial (copiados de MrKlaus assets)
 ├── data/                                # Runtime, gitignored — datos del dueño
@@ -106,10 +106,10 @@ Portal/                                  # App sobre la plantilla (package manag
 # fuera de alcance: pantallas demo de la plantilla):
 #   eliminar src/proxy.ts, src/config/auth-config.ts, src/server/auth-actions.ts,
 #   src/app/(main)/auth/**, src/data/users.ts y rutas demo no usadas (chat, mail,
-#   dashboards de ejemplo). Started/ NO se modifica (referencia intacta).
+#   dashboards de ejemplo). plantilla/ NO se modifica (referencia intacta).
 ```
 
-**Structure Decision**: proyecto único dentro de `Portal/` siguiendo la convención de co-ubicación de AGENTS.md (`dashboard/<screen>/_components`, `_data`). La costura de desacoplamiento exigida por la constitución es: `domain` (puro, testeable con `node:test`) → `repositories` (SQL) → `services` (casos de uso) → `app` (UI + Server Actions). Cambios a esta convención: ninguno; solo se agregan `src/lib/domain/`, `src/server/db|repositories|services/` y `data/` + `seed/` como artefactos de runtime/datos.
+**Structure Decision**: proyecto único dentro de `portal/` siguiendo la convención de co-ubicación de AGENTS.md (`dashboard/<screen>/_components`, `_data`). La costura de desacoplamiento exigida por la constitución es: `domain` (puro, testeable con `node:test`) → `repositories` (SQL) → `services` (casos de uso) → `app` (UI + Server Actions). Cambios a esta convención: ninguno; solo se agregan `src/lib/domain/`, `src/server/db|repositories|services/` y `data/` + `seed/` como artefactos de runtime/datos.
 
 ## Complexity Tracking
 

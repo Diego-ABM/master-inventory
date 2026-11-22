@@ -6,7 +6,7 @@ punta a punta. No requiere leer código.
 ## Prerrequisitos
 
 ```bash
-cd Portal
+cd portal
 cp .env.example .env.local   # si no existe
 # En .env.local definir:
 #   STORAGE_POSTGRES_URL="postgres://..."   (Supabase)
@@ -85,7 +85,7 @@ pnpm dev                     # http://localhost:3000
 ## Tests de dominio (opcional, técnico)
 
 ```bash
-cd Portal
+cd portal
 node --test 'src/lib/domain/*.test.ts'   # incluye tests de etiquetaItemProducto
 pnpm check                             # biome lint+format
 pnpm build                             # compilación limpia

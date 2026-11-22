@@ -6,7 +6,7 @@ se comprueba usando la app (Constitución IV).
 ## Prerequisitos
 
 ```bash
-cd Portal
+cd portal
 pnpm install && pnpm dev   # http://localhost:3000
 ```
 
@@ -84,7 +84,7 @@ cambios en los formularios cubiertos (SC-006).
 ## Verificación de regresión
 
 ```bash
-cd Portal
+cd portal
 pnpm check   # lint + format (Biome)
 pnpm build   # typecheck + build de producción
 ```

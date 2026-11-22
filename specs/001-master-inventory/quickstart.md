@@ -5,10 +5,10 @@ Escenarios ejecutables para comprobar la funcionalidad de punta a punta usando s
 ## Prerrequisitos
 
 - Node ≥ 22.5 (desarrollo: Node 26) y pnpm.
-- Dependencias instaladas: `cd Portal && pnpm install`.
-- Semilla disponible: `Portal/seed/productos_seed.json` (76 ítems) + `Portal/public/seed/images/` (62 PNG) — copiados desde MrKlaus `app/src/main/assets/`.
-- Arranque: `cd Portal && pnpm dev` → abrir `http://localhost:3000`.
-- Datos en `Portal/data/` (`master-inventory.db` + `fotos/`). Para "sistema limpio": borrar `data/` antes de arrancar.
+- Dependencias instaladas: `cd portal && pnpm install`.
+- Semilla disponible: `portal/seed/productos_seed.json` (76 ítems) + `portal/public/seed/images/` (62 PNG) — copiados desde MrKlaus `app/src/main/assets/`.
+- Arranque: `cd portal && pnpm dev` → abrir `http://localhost:3000`.
+- Datos en `portal/data/` (`master-inventory.db` + `fotos/`). Para "sistema limpio": borrar `data/` antes de arrancar.
 
 ## Escenarios de validación
 
@@ -87,7 +87,7 @@ Escenarios ejecutables para comprobar la funcionalidad de punta a punta usando s
 ## Verificación técnica (opcional, para quien desarrolla)
 
 ```bash
-cd Portal
+cd portal
 node --test src/lib/domain/**/*.test.ts   # lógica pura: stock, precios, semáforo, reportes
 pnpm check                              # Biome lint/format
 pnpm build                              # build de Next.js

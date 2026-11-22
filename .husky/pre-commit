@@ -1,4 +1,4 @@
-cd Portal
+cd portal
 pnpm run generate:presets
 git add src/lib/preferences/theme.ts
 pnpm exec lint-staged

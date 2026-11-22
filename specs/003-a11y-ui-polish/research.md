@@ -1,6 +1,6 @@
 # Research: Pulido de accesibilidad y UI
 
-Todas las decisiones se tomaron inspeccionando el código real en `Portal/src` y las
+Todas las decisiones se tomaron inspeccionando el código real en `portal/src` y las
 docs empaquetadas de Next 16.4.6 (`node_modules/next/dist/docs/`). No quedan
 `NEEDS CLARIFICATION`.
 
