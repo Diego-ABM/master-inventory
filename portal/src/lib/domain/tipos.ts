@@ -101,6 +101,26 @@ export interface NuevoVentaItem {
   precio_venta: number;
 }
 
+export interface ItemVentaInput {
+  producto_id: number;
+  cantidad: number;
+}
+
+export type PeriodoId = "hoy" | "semana" | "mes" | "anio";
+
+export interface PuntoSerie {
+  etiqueta: string;
+  total: number;
+}
+
+export interface PeriodoMetricas {
+  id: PeriodoId;
+  etiqueta: string;
+  totalVendido: number;
+  numeroVentas: number;
+  serie: PuntoSerie[];
+}
+
 export interface PedidoCliente {
   id: number;
   nombre_cliente: string;

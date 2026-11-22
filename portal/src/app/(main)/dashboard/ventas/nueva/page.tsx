@@ -1,8 +1,6 @@
-import { notFound, redirect } from "next/navigation";
-
 import { productoRepo } from "@/server/repositories/productos";
 
-import { FormularioVenta } from "./_components/formulario-venta";
+import { PosVenta } from "./_components/pos-venta";
 
 export const dynamic = "force-dynamic";
 
@@ -11,16 +9,16 @@ export default async function PaginaNuevaVenta({
 }: {
   searchParams: Promise<Record<string, string | string[] | undefined>>;
 }) {
-  const params = await searchParams;
+  const [params, productos] = await Promise.all([searchParams, productoRepo.listar()]);
+
   const productoId = Number(params.producto);
-  if (!Number.isInteger(productoId) || productoId <= 0) redirect("/dashboard/inventario");
-  const producto = await productoRepo.obtener(productoId);
-  if (!producto) notFound();
+  const productoPrecargado =
+    Number.isInteger(productoId) && productoId > 0 ? (productos.find((p) => p.id === productoId) ?? null) : null;
 
   return (
     <div className="flex flex-col gap-4">
-      <h1 className="text-xl font-semibold">Registrar venta</h1>
-      <FormularioVenta producto={producto} />
+      <h1 className="text-xl font-semibold">Nueva venta</h1>
+      <PosVenta productos={productos} productoPrecargado={productoPrecargado} />
     </div>
   );
 }

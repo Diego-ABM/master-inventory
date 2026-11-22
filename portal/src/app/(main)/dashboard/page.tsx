@@ -5,15 +5,16 @@ import { Bell, Package, Plus, ReceiptText, ShoppingBag, ShoppingCart } from "luc
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Empty, EmptyDescription, EmptyHeader, EmptyTitle } from "@/components/ui/empty";
+import { agregarVentas, rangoPeriodo } from "@/lib/domain/metricas";
 import { formatearCOP } from "@/lib/domain/moneda";
 import { diasRestantes, semaforo } from "@/lib/domain/vencimiento";
 import { pedidoRepo } from "@/server/repositories/pedidos";
 import { productoRepo } from "@/server/repositories/productos";
 import { ventaRepo } from "@/server/repositories/ventas";
 
-export const dynamic = "force-dynamic";
+import { PanelMetricas } from "./_components/panel-metricas";
 
-const DIA_MS = 24 * 60 * 60 * 1000;
+export const dynamic = "force-dynamic";
 
 const ACCESOS_RAPIDOS = [
   { href: "/dashboard/pedidos/nuevo", etiqueta: "Nuevo pedido", icono: Plus },
@@ -53,12 +54,19 @@ export default async function PaginaPanel() {
   const fecha = new Date(ahora);
   const inicioDia = new Date(fecha.getFullYear(), fecha.getMonth(), fecha.getDate()).getTime();
 
-  const [ventasHoy, pedidosPendientes, agotados, vencimientos] = await Promise.all([
-    ventaRepo.listar({ desde: inicioDia, hasta: inicioDia + DIA_MS }),
+  // Una sola consulta cubre los 4 períodos: desde el lunes de la semana en curso
+  // o el inicio del año, lo que sea menor (la semana puede iniciar en el año anterior).
+  const desde = Math.min(rangoPeriodo("semana", fecha).desde, rangoPeriodo("anio", fecha).desde);
+
+  const [ventas, pedidosPendientes, agotados, vencimientos] = await Promise.all([
+    ventaRepo.listar({ desde, hasta: ahora }),
     pedidoRepo.listar({ entregado: false }),
     productoRepo.listarAgotados(),
     productoRepo.listarVencimientos(),
   ]);
+
+  const ventasHoy = ventas.filter((v) => v.fecha >= inicioDia);
+  const metricas = (["hoy", "semana", "mes", "anio"] as const).map((periodo) => agregarVentas(ventas, periodo, fecha));
 
   const totalHoy = ventasHoy.reduce((total, venta) => total + venta.total, 0);
   const proximosVencer = vencimientos.filter(
@@ -113,6 +121,8 @@ export default async function PaginaPanel() {
           ))}
         </div>
       </section>
+
+      <PanelMetricas metricas={metricas} />
 
       <section className="flex flex-col gap-3">
         <h2 className="flex items-center gap-2 text-base font-medium">

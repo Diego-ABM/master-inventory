@@ -1,3 +1,8 @@
+import Link from "next/link";
+
+import { ShoppingCart } from "lucide-react";
+
+import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Empty, EmptyDescription, EmptyHeader, EmptyTitle } from "@/components/ui/empty";
 import { formatearCOP } from "@/lib/domain/moneda";
@@ -14,12 +19,18 @@ export default async function PaginaVentas() {
 
   return (
     <div className="flex flex-col gap-4">
-      <h1 className="text-xl font-semibold">Ventas</h1>
+      <div className="flex items-center justify-between gap-2">
+        <h1 className="text-xl font-semibold">Ventas</h1>
+        <Button render={<Link href="/dashboard/ventas/nueva" />} nativeButton={false}>
+          <ShoppingCart className="size-4" />
+          Nueva venta
+        </Button>
+      </div>
       {ventas.length === 0 ? (
         <Empty>
           <EmptyHeader>
             <EmptyTitle>No hay ventas registradas</EmptyTitle>
-            <EmptyDescription>Registra una venta desde el detalle de un producto.</EmptyDescription>
+            <EmptyDescription>Registra una venta desde el botón Nueva venta.</EmptyDescription>
           </EmptyHeader>
         </Empty>
       ) : (

@@ -8,6 +8,7 @@ import {
   ReceiptText,
   ScrollText,
   ShoppingBag,
+  ShoppingCart,
 } from "lucide-react";
 
 export type NavBadge = "new" | "updated" | "soon";
@@ -93,6 +94,18 @@ export const sidebarItems: NavGroup[] = [
   },
   {
     id: 2,
+    label: "Acciones",
+    items: [
+      {
+        id: "nueva-venta",
+        title: "Nueva venta",
+        url: "/dashboard/ventas/nueva",
+        icon: ShoppingCart,
+      },
+    ],
+  },
+  {
+    id: 3,
     label: "Sistema",
     items: [
       {

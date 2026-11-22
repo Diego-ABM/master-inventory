@@ -1,4 +1,4 @@
-import { calcularTotalVenta } from "./ventas.ts";
+import { calcularTotalVenta, calcularTotalVentaMulti } from "./ventas.ts";
 import assert from "node:assert/strict";
 import { describe, it } from "node:test";
 
@@ -19,5 +19,33 @@ describe("calcularTotalVenta", () => {
     assert.throws(() => calcularTotalVenta({ ...base, cantidad: 0 }));
     assert.throws(() => calcularTotalVenta({ ...base, cantidad: -2 }));
     assert.throws(() => calcularTotalVenta({ ...base, cantidad: 1.5 }));
+  });
+});
+
+describe("calcularTotalVentaMulti", () => {
+  const item = (cantidad: number, precio_venta: number) => ({
+    producto_id: 1,
+    nombre_producto: "X",
+    cantidad,
+    precio_compra: 0,
+    precio_venta,
+  });
+
+  it("suma cantidad × precio_venta de todos los ítems", () => {
+    assert.equal(calcularTotalVentaMulti([item(2, 15000), item(3, 8000), item(1, 5000)]), 59000);
+  });
+
+  it("funciona con un solo ítem", () => {
+    assert.equal(calcularTotalVentaMulti([item(4, 2500)]), 10000);
+  });
+
+  it("lanza error si algún ítem tiene cantidad inválida", () => {
+    assert.throws(() => calcularTotalVentaMulti([item(1, 100), item(0, 200)]));
+    assert.throws(() => calcularTotalVentaMulti([item(-1, 100)]));
+    assert.throws(() => calcularTotalVentaMulti([item(2.5, 100)]));
+  });
+
+  it("lanza error con la lista vacía", () => {
+    assert.throws(() => calcularTotalVentaMulti([]));
   });
 });

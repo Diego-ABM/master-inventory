@@ -1,54 +1,77 @@
 import type { ReactNode } from "react";
 
+import { cookies } from "next/headers";
+
 import { cn } from "cn";
 
-import { APP_CONFIG } from "@/config/app-config";
+import { Separator } from "@/components/ui/separator";
+import { SidebarInset, SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
+import { getPreference } from "@/server/server-actions";
 
 import { BotonSalir } from "./_components/boton-salir";
-import { BottomNav } from "./_components/bottom-nav/bottom-nav";
 import { FabPedido } from "./_components/fab-pedido";
 import { LayoutControls } from "./_components/header/layout-controls";
 import { SearchDialog } from "./_components/header/search-dialog";
 import { ThemeSwitcher } from "./_components/header/theme-switcher";
-import { NavHeader } from "./_components/nav-header";
+import { AppSidebar } from "./_components/sidebar/app-sidebar";
 
-export default function Layout({ children }: Readonly<{ children: ReactNode }>) {
+export default async function Layout({ children }: Readonly<{ children: ReactNode }>) {
+  const cookieStore = await cookies();
+  const defaultOpen = cookieStore.get("sidebar_state")?.value !== "false";
+  const [variant, collapsible] = await Promise.all([
+    getPreference("sidebar_variant"),
+    getPreference("sidebar_collapsible"),
+  ]);
+
   return (
-    <div className="flex min-h-screen flex-col">
+    <SidebarProvider
+      defaultOpen={defaultOpen}
+      style={{ "--sidebar-width": "calc(var(--spacing) * 68)" } as React.CSSProperties}
+    >
       <a
         href="#contenido"
-        className="bg-background text-foreground ring-ring/50 sr-only rounded-md px-4 py-2 text-sm shadow-md outline-none focus:not-sr-only focus:mx-4 focus:mt-2 focus:w-fit focus:ring-2"
+        className="bg-background text-foreground ring-ring/50 sr-only rounded-md px-4 py-2 text-sm shadow-md outline-none focus:not-sr-only focus:fixed focus:z-50 focus:mx-4 focus:mt-2 focus:w-fit focus:ring-2"
       >
         Saltar al contenido principal
       </a>
-      <header
-        className={cn(
-          "flex h-12 shrink-0 items-center border-b",
-          "[html[data-navbar-style=sticky]_&]:bg-background/50 [html[data-navbar-style=sticky]_&]:sticky [html[data-navbar-style=sticky]_&]:top-0 [html[data-navbar-style=sticky]_&]:z-50 [html[data-navbar-style=sticky]_&]:overflow-hidden [html[data-navbar-style=sticky]_&]:backdrop-blur-md",
-        )}
-      >
-        <div className="mx-auto flex w-full max-w-screen-2xl items-center justify-between px-4 lg:px-6">
-          <div className="flex min-w-0 items-center gap-2">
-            <span className="shrink-0 text-sm font-semibold">{APP_CONFIG.name}</span>
-            <SearchDialog />
-            <NavHeader />
-          </div>
-          <div className="flex items-center gap-2">
-            <LayoutControls />
-            <ThemeSwitcher />
-            <BotonSalir />
-          </div>
-        </div>
-      </header>
-      <main
+      <AppSidebar variant={variant} collapsible={collapsible} />
+      <SidebarInset
         id="contenido"
         tabIndex={-1}
-        className="min-h-0 min-w-0 flex-1 overflow-x-hidden pb-[calc(5rem+env(safe-area-inset-bottom))] lg:pb-[calc(1.5rem+env(safe-area-inset-bottom))]"
+        className={cn(
+          "[html[data-content-layout=centered]_&>*]:mx-auto",
+          "[html[data-content-layout=centered]_&>*]:w-full",
+          "[html[data-content-layout=centered]_&>*]:max-w-screen-2xl",
+          "peer-data-[variant=inset]:border",
+          "[--dashboard-header-height:--spacing(12)]",
+          "min-w-0 overflow-x-clip",
+        )}
       >
-        <div className="mx-auto w-full max-w-screen-2xl p-4 md:p-6">{children}</div>
-      </main>
-      <BottomNav />
+        <header
+          className={cn(
+            "flex h-12 shrink-0 items-center gap-2 border-b transition-[width,height] ease-linear group-has-data-[collapsible=icon]/sidebar-wrapper:h-12",
+            "[html[data-navbar-style=sticky]_&]:bg-background/50 [html[data-navbar-style=sticky]_&]:sticky [html[data-navbar-style=sticky]_&]:top-0 [html[data-navbar-style=sticky]_&]:z-50 [html[data-navbar-style=sticky]_&]:overflow-hidden [html[data-navbar-style=sticky]_&]:rounded-t-[inherit] [html[data-navbar-style=sticky]_&]:backdrop-blur-md",
+          )}
+        >
+          <div className="flex w-full items-center justify-between px-4 lg:px-6">
+            <div className="flex items-center gap-1 lg:gap-2">
+              <SidebarTrigger className="-ml-1" />
+              <Separator
+                orientation="vertical"
+                className="mx-2 data-[orientation=vertical]:h-4 data-[orientation=vertical]:self-center"
+              />
+              <SearchDialog />
+            </div>
+            <div className="flex items-center gap-2">
+              <LayoutControls />
+              <ThemeSwitcher />
+              <BotonSalir />
+            </div>
+          </div>
+        </header>
+        <div className="min-h-0 min-w-0 flex-1 overflow-x-hidden p-4 md:p-6">{children}</div>
+      </SidebarInset>
       <FabPedido />
-    </div>
+    </SidebarProvider>
   );
 }

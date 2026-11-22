@@ -2,7 +2,7 @@
 
 ## Project overview
 
-Studio Admin is a responsive admin dashboard built with Next.js 16, React 19, TypeScript, Tailwind CSS v4, and shadcn/ui.
+Master Inventory es un admin dashboard de inventario y ventas construido con Next.js 16, React 19, TypeScript, Tailwind CSS v4 y shadcn/ui.
 
 This repository uses the shadcn `base-nova` style. When the shadcn CLI reports `base: "base"`, it refers to Base UI. Always inspect the local components in `src/components/ui/` because individual wrappers may use different primitives.
 
@@ -32,25 +32,25 @@ Do not modify files inside `src/components/ui/` or `src/components/calendar/`. K
 
 ## Setup
 
-This project uses npm.
+This project uses pnpm.
 
 ```bash
-npm install
-npm run dev
+pnpm install
+pnpm dev
 ```
 
 Available commands:
 
 ```bash
-npm run build
-npm run lint
-npm run format
-npm run check
-npm run check:fix
-npm run generate:presets
+pnpm build
+pnpm lint
+pnpm format
+pnpm check
+pnpm check:fix
+pnpm generate:presets
 ```
 
-There is currently no automated test command. Run build, lint, check, or other validation commands only when the user explicitly requests that validation.
+Domain tests run with `node --test 'src/lib/domain/*.test.ts'` (pure logic in `src/lib/domain/`). Run build, lint, check, or other validation commands only when the user explicitly requests that validation.
 
 ## Co-location-based structure
 

@@ -2,15 +2,17 @@ import type { NuevoVentaItem, VentaConItems, VentaItem } from "@/lib/domain/tipo
 import { abrirDb, aObjeto, aObjetos, type Sql } from "@/server/db";
 
 export const ventaRepo = {
-  async crear(venta: { fecha: number; total: number }, item: NuevoVentaItem, sql?: Sql): Promise<number> {
+  async crear(venta: { fecha: number; total: number }, items: NuevoVentaItem[], sql?: Sql): Promise<number> {
     const db = sql ?? (await abrirDb());
     const [fila] = await db`
       INSERT INTO ventas (fecha, total) VALUES (${venta.fecha}, ${venta.total}) RETURNING id`;
     const ventaId = Number(fila.id);
-    await db`
-      INSERT INTO venta_items (venta_id, producto_id, nombre_producto, cantidad, precio_compra, precio_venta)
-      VALUES (${ventaId}, ${item.producto_id}, ${item.nombre_producto}, ${item.cantidad},
-        ${item.precio_compra}, ${item.precio_venta})`;
+    for (const item of items) {
+      await db`
+        INSERT INTO venta_items (venta_id, producto_id, nombre_producto, cantidad, precio_compra, precio_venta)
+        VALUES (${ventaId}, ${item.producto_id}, ${item.nombre_producto}, ${item.cantidad},
+          ${item.precio_compra}, ${item.precio_venta})`;
+    }
     return ventaId;
   },
 
